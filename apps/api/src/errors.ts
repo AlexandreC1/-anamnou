@@ -29,7 +29,16 @@ export class SafeErrorFilter implements ExceptionFilter {
   constructor(private readonly reporter: ErrorReporter) {}
   catch(error: unknown, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<Response>();
-    const statusCode = error instanceof HttpException ? error.getStatus() : 500;
+    const parserStatus =
+      typeof error === 'object' && error !== null && 'type' in error
+        ? error.type === 'entity.too.large'
+          ? 413
+          : error.type === 'entity.parse.failed'
+            ? 400
+            : 500
+        : 500;
+    const statusCode =
+      error instanceof HttpException ? error.getStatus() : parserStatus;
     const requestId = String(response.getHeader('x-request-id'));
     if (statusCode >= 500) this.reporter.report({ requestId, statusCode });
     response.status(statusCode).json({

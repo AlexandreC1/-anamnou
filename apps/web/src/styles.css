@@ -1,4 +1,79 @@
 @charset "UTF-8";
+.identity-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  padding: clamp(2rem, 5vw, 5rem) 0;
+  align-items: start;
+}
+.identity-intro h1 {
+  font-size: clamp(2.4rem, 4.5vw, 4.5rem);
+  overflow-wrap: anywhere;
+}
+.identity-panel {
+  border-top: 2px solid var(--accent);
+  padding-top: 2rem;
+  min-width: 0;
+}
+.account-form,
+.account-form label {
+  display: grid;
+  gap: 0.75rem;
+}
+.account-form {
+  gap: 1.5rem;
+}
+.account-form input,
+.account-form select {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0.8rem;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+}
+.account-form input:focus-visible,
+.account-form select:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.field-hint {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.account-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.account-links a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.secondary-button {
+  background: transparent;
+  color: var(--ink);
+}
+.identity-panel [role='alert'] {
+  border-left: 3px solid var(--accent);
+  padding-left: 1rem;
+}
+.identity-panel p {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 720px) {
+  .identity-layout {
+    grid-template-columns: 1fr;
+  }
+  .site-header nav {
+    flex-wrap: wrap;
+  }
+}
 :root {
   font-family: 'Public Sans', sans-serif;
   color: oklch(25% 0.025 65);
@@ -251,6 +326,14 @@ nav a[aria-current='page'] {
 @media (max-width: 720px) {
   .site-header {
     min-height: 88px;
+    flex-wrap: wrap;
+    padding-bottom: 1rem;
+    gap: 0.75rem;
+  }
+  .site-header nav {
+    order: 2;
+    flex: 1 1 100%;
+    gap: 1.5rem;
   }
   .language-choice {
     display: inline-flex;

@@ -7,8 +7,8 @@
     "apps/*"
   ],
   "engines": {
-    "node": "\u003e=24.20.0 \u003c25",
-    "npm": "\u003e=11 \u003c12"
+    "node": ">=24.20.0 <25",
+    "npm": ">=11 <12"
   },
   "scripts": {
     "setup:env": "node scripts/setup-env.mjs",
@@ -24,21 +24,24 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "npm run db:generate \u0026\u0026 tsc -p tsconfig.tools.json --noEmit \u0026\u0026 npm run typecheck --workspaces",
+    "typecheck": "npm run db:generate && tsc -p tsconfig.tools.json --noEmit && npm run typecheck --workspaces",
     "test": "npm run test --workspaces",
-    "test:integration": "npm run test:integration --workspace @yearbook/api",
-    "test:e2e": "playwright test",
-    "build": "npm run db:generate \u0026\u0026 npm run build --workspaces",
-    "check": "npm run lint \u0026\u0026 npm run format:check \u0026\u0026 npm run typecheck \u0026\u0026 npm test \u0026\u0026 npm run test:integration \u0026\u0026 npm run build \u0026\u0026 npm run test:e2e"
+    "test:setup": "node scripts/setup-test-db.mjs",
+    "test:integration": "npm run test:setup && npm run test:integration --workspace @yearbook/api",
+    "test:e2e": "npm run test:setup && playwright test",
+    "build": "npm run db:generate && npm run build --workspaces",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run test:integration && npm run build && npm run test:e2e"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",
+    "@playwright/cli": "0.1.19",
     "@playwright/test": "1.63.0",
     "@types/node": "^24.0.0",
     "eslint": "^9.39.0",
-    "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "globals": "^16.5.0",
+    "pg": "8.23.0",
     "prettier": "^3.6.2",
     "prisma": "7.10.0",
     "tsx": "^4.20.6",

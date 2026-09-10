@@ -1,11 +1,14 @@
-# Anamnou
+# Telos — TÈLÒ
+
+**Yon chapit fini. Yon istwa rete.**
 
 A digital yearbook platform for graduating classes, starting in Haiti.
 
-**Current scope: Phase 0 foundation.** This repository contains a React shell,
-NestJS operations API, PostgreSQL migration, private S3-compatible storage,
-automated checks, and a local development environment. Accounts, class creation,
-profiles, uploads, voting, and publishing are intentionally not implemented.
+**Current scope: Phase 1 identity.** The React/NestJS foundation now supports
+registration, verification, login/logout, revocable sessions, password recovery,
+and personal account settings. PostgreSQL, private object storage and email
+delivery run locally. Class creation, media uploads, voting and publishing follow
+in their later phases. See [identity setup](docs/development/identity.md).
 
 Read [PROJECT_BIBLE.md](PROJECT_BIBLE.md) and
 [the engineering contract](docs/ASTRA_ENGINEERING_CONTRACT.md) before changing code.
@@ -55,6 +58,8 @@ npm run dev:web
 - API readiness: http://127.0.0.1:4000/ready
 - OpenAPI JSON: http://127.0.0.1:4000/openapi.json
 - MinIO console: http://127.0.0.1:9001 (credentials are in your private .env)
+- Local email inbox: http://localhost:8025
+- Create an account: http://localhost:3000/register
 
 Visit **Connection status** in the footer and select **Check connection**. This
 makes a real request through the web proxy to the API, PostgreSQL, and MinIO.
@@ -63,7 +68,7 @@ A failed dependency gives visible retry feedback, not hardcoded success.
 ### Port conflicts
 
 Infrastructure binds to loopback. Defaults are PostgreSQL 5432, MinIO 9000/9001,
-web 3000, and API 4000. Do not stop unrelated services to free a port.
+web 3000, API 4000, and Mailpit 1025/8025. Do not stop unrelated services to free a port.
 
 If PostgreSQL 5432 is occupied, change POSTGRES_PORT to 5433 and change the port
 inside DATABASE_URL to 5433 in .env, then rerun infra:up. The original development
@@ -100,7 +105,8 @@ npm run test:e2e
 ```
 
 See [test strategy](docs/development/testing.md) and
-[delivery evidence](docs/development/phase-0-report.md).
+[Phase 0 evidence](docs/development/phase-0-report.md) and
+[Phase 1 evidence](docs/development/phase-1-report.md).
 
 ## Production-like local run
 
@@ -122,10 +128,10 @@ Production deployment and the product's security release gate are still future w
 
 ## Database and storage
 
-Prisma migrations are committed; generated client code is not. The only table is
-SystemMetadata, an operational migration/seed probe. The idempotent development
-seed inserts foundation_version=1. No fake users, development passwords, or
-business entities are created.
+Prisma migrations are committed; generated client code is not. Identity adds User,
+Session, IdentityToken, IdentityEmailJob, AuditLog and AuthThrottle alongside SystemMetadata. The
+idempotent development seed still inserts foundation_version=1. Register through
+the real account flow; no shared passwords or fake users are seeded.
 
 MinIO uses a private bucket. storage:init is idempotent and fails if an existing
 bucket policy needs review. Storage read/write/delete is an internal adapter;
@@ -148,9 +154,8 @@ Shared packages are deferred until actual shared code justifies them.
 
 ## Next phase
 
-**Phase 1 only, after explicit instruction:** authentication and identity,
-including sessions, Argon2id, local email delivery, verification, recovery and
-authorization groundwork. No school/class/yearbook implementation in that phase.
+**Phase 2 only, after explicit instruction:** school/class creation, scoped
+memberships and roles, invitation links/codes/QR, and member directory.
 
 ### First MinIO build
 
@@ -160,4 +165,7 @@ installation is needed. See [ADR 0007](docs/adr/0007-local-storage-security-rele
 
 ### Languages
 
-The Phase 0 shell provides a keyboard-accessible choice of Kreyòl ayisyen, Français, English and Español. The locale is local to the browser until account preferences exist in the identity phase.
+The shell and identity screens provide Kreyòl ayisyen, Français, English and
+Español. Browser UI selection persists locally; preferred email language is saved
+in the account. The opening page, About, diagnostics, missing-page recovery and
+identity flows use the selected language.

@@ -6,8 +6,8 @@ changing code. Inspect the current repository and preserve existing work.
 The product Bible governs product behavior. Flag material conflicts instead of
 silently changing architecture, security, ownership or requirements.
 
-Current authorized scope is Phase 0 only. Do not implement authentication or
-business features without the user's next explicit phase instruction.
+Current authorized scope is Phase 1 identity, explicitly authorized after Phase 0.
+Stop before school/class and yearbook business features.
 
 Use npm workspaces and the pinned Node version. Run npm run check and
 npm audit --audit-level=high before declaring the foundation verified.
