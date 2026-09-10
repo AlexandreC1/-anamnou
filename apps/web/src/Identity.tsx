@@ -91,7 +91,7 @@ export function IdentityForm({ mode, locale }: { mode: Mode; locale: Locale }) {
   return (
     <section className="identity-layout">
       <div className="identity-intro">
-        <p className="eyebrow">Anamnou</p>
+        <p className="eyebrow">TÈLÒ</p>
         <h1>{title}</h1>
         <p className="intro">{t.introduction}</p>
         <p>{t.privacy}</p>
@@ -260,7 +260,7 @@ export function AccountPage({ locale }: { locale: Locale }) {
   return (
     <section className="identity-layout">
       <div className="identity-intro">
-        <p className="eyebrow">Anamnou</p>
+        <p className="eyebrow">TÈLÒ</p>
         <h1>{t.account}</h1>
         <p className="intro">{t.profileIntro}</p>
       </div>

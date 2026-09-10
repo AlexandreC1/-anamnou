@@ -33,7 +33,7 @@ const copy: Record<Locale, Copy> = {
     home: 'Akèy',
     idea: 'Lide a',
     connection: 'Koneksyon',
-    footer: 'Sa nou te ye. Sa n ap vin ye.',
+    footer: 'Yon chapit fini. Yon istwa rete.',
     status: 'Tcheke koneksyon',
     eyebrow: 'Yon plas pou pwochen chapit nou an',
     titleA: 'Gen chapit',
@@ -49,7 +49,7 @@ const copy: Record<Locale, Copy> = {
     home: 'Accueil',
     idea: "L'idée",
     connection: 'Connexion',
-    footer: 'Qui nous étions. Qui nous devenons.',
+    footer: 'Un chapitre se termine. Une histoire reste.',
     status: 'État de la connexion',
     eyebrow: 'Un lieu pour notre prochain chapitre',
     titleA: 'Certains chapitres',
@@ -65,7 +65,7 @@ const copy: Record<Locale, Copy> = {
     home: 'Home',
     idea: 'The idea',
     connection: 'Connection',
-    footer: 'Who we were. Who we become.',
+    footer: 'A chapter ends. A story remains.',
     status: 'Connection status',
     eyebrow: 'A place for our next chapter',
     titleA: 'Some chapters',
@@ -81,7 +81,7 @@ const copy: Record<Locale, Copy> = {
     home: 'Inicio',
     idea: 'La idea',
     connection: 'Conexión',
-    footer: 'Quiénes fuimos. En quiénes nos convertimos.',
+    footer: 'Un capítulo termina. Una historia permanece.',
     status: 'Estado de conexión',
     eyebrow: 'Un lugar para nuestro próximo capítulo',
     titleA: 'Algunos capítulos',
@@ -97,7 +97,8 @@ function RouteFocus({ locale }: { locale: Locale }) {
   const previous = useRef(pathname);
   useEffect(() => {
     document.title =
-      (document.querySelector('h1')?.textContent ?? 'Anamnou') + ' — Anamnou';
+      (document.querySelector('h1')?.textContent ?? 'Telos') +
+      ' — Telos — TÈLÒ';
     if (previous.current !== pathname) {
       document.getElementById('main')?.focus();
       previous.current = pathname;
@@ -153,8 +154,12 @@ export function App() {
         {selected.skip}
       </a>
       <header className="site-header">
-        <Link className="wordmark" to="/" aria-label="Anamnou home">
-          anamnou<span aria-hidden="true">.</span>
+        <Link
+          className="wordmark"
+          to="/"
+          aria-label={`TÈLÒ — ${selected.home}`}
+        >
+          TÈLÒ<span aria-hidden="true">.</span>
         </Link>
         <nav aria-label={selected.nav}>
           <NavLink to="/" end>
@@ -208,8 +213,7 @@ function Home({ selected, locale }: { selected: Copy; locale: Locale }) {
       <div className="opening-copy">
         <p className="eyebrow">{selected.eyebrow}</p>
         <h1 id="opening-title">
-          {selected.titleA}
-          <br />
+          {selected.titleA} <br />
           <em>{selected.titleB}</em>
         </h1>
         <p className="intro">{selected.intro}</p>
@@ -219,7 +223,7 @@ function Home({ selected, locale }: { selected: Copy; locale: Locale }) {
       </div>
       <div className="publication" aria-hidden="true">
         <div className="publication-top">
-          <span>ANAMNOU</span>
+          <span>TÈLÒ</span>
           <span>{t.archive}</span>
         </div>
         <p className="publication-title">{t.cover}</p>

@@ -1,4 +1,6 @@
-# Anamnou
+# Telos — TÈLÒ
+
+**Yon chapit fini. Yon istwa rete.**
 
 A digital yearbook platform for graduating classes, starting in Haiti.
 
