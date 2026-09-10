@@ -1,0 +1,16 @@
+generator client {
+  provider = "prisma-client"
+  output = "../apps/api/src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Operational metadata only. Business entities start in their authorized phases.
+model SystemMetadata {
+  key       String   @id @db.VarChar(64)
+  value     String   @db.VarChar(256)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}

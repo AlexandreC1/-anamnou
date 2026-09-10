@@ -1,0 +1,56 @@
+{
+  "name": "yearbook-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": "\u003e=24.20.0 \u003c25",
+    "npm": "\u003e=11 \u003c12"
+  },
+  "scripts": {
+    "setup:env": "node scripts/setup-env.mjs",
+    "infra:up": "docker compose up -d --wait",
+    "infra:down": "docker compose down",
+    "storage:init": "tsx scripts/init-storage.ts",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:dev": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "dev:web": "npm run dev --workspace @yearbook/web",
+    "dev:api": "npm run dev --workspace @yearbook/api",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "npm run db:generate \u0026\u0026 tsc -p tsconfig.tools.json --noEmit \u0026\u0026 npm run typecheck --workspaces",
+    "test": "npm run test --workspaces",
+    "test:integration": "npm run test:integration --workspace @yearbook/api",
+    "test:e2e": "playwright test",
+    "build": "npm run db:generate \u0026\u0026 npm run build --workspaces",
+    "check": "npm run lint \u0026\u0026 npm run format:check \u0026\u0026 npm run typecheck \u0026\u0026 npm test \u0026\u0026 npm run test:integration \u0026\u0026 npm run build \u0026\u0026 npm run test:e2e"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@playwright/test": "1.63.0",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.39.0",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "globals": "^16.5.0",
+    "prettier": "^3.6.2",
+    "prisma": "7.10.0",
+    "tsx": "^4.20.6",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.46.0"
+  },
+  "overrides": {
+    "mysql2": "3.24.4",
+    "multer": "2.3.0",
+    "deepmerge-ts": "8.0.2"
+  },
+  "scarfSettings": {
+    "enabled": false
+  }
+}

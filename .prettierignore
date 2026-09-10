@@ -1,0 +1,10 @@
+node_modules
+.tools
+dist
+dist-test
+coverage
+playwright-report
+test-results
+apps/api/src/generated
+PROJECT_BIBLE.md
+package-lock.json
