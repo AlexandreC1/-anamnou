@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Route, Routes, useLocation } from 'react-router';
+import { AccountPage, IdentityForm } from './Identity';
+import { identityCopy } from './identity-copy';
+import { publicCopy } from './public-copy';
 
 type Locale = 'ht' | 'fr' | 'en' | 'es';
 const localeLabels: Record<Locale, string> = {
@@ -89,21 +92,17 @@ const copy: Record<Locale, Copy> = {
     note: 'La primera edición está tomando forma. Los espacios de clase llegarán en una versión futura.',
   },
 };
-function RouteFocus() {
+function RouteFocus({ locale }: { locale: Locale }) {
   const { pathname } = useLocation();
   const previous = useRef(pathname);
   useEffect(() => {
-    const labels: Record<string, string> = {
-      '/': 'Our next chapter',
-      '/about': 'The idea',
-      '/connection': 'Connection',
-    };
-    document.title = (labels[pathname] ?? 'Page not found') + ' — Anamnou';
+    document.title =
+      (document.querySelector('h1')?.textContent ?? 'Anamnou') + ' — Anamnou';
     if (previous.current !== pathname) {
       document.getElementById('main')?.focus();
       previous.current = pathname;
     }
-  }, [pathname]);
+  }, [pathname, locale]);
   return null;
 }
 function useLocale(): [Locale, (locale: Locale) => void] {
@@ -116,6 +115,9 @@ function useLocale(): [Locale, (locale: Locale) => void] {
     window.localStorage.setItem('anamnou-locale', next);
     document.documentElement.lang = next;
   }
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
   return [locale, setLocale];
 }
 function LanguageChoice({
@@ -159,16 +161,37 @@ export function App() {
             {selected.home}
           </NavLink>
           <NavLink to="/about">{selected.idea}</NavLink>
+          <NavLink to="/profile">{identityCopy[locale].account}</NavLink>
         </nav>
         <LanguageChoice locale={locale} onChange={setLocale} />
       </header>
-      <RouteFocus />
+      <RouteFocus locale={locale} />
       <main id="main" tabIndex={-1}>
         <Routes>
-          <Route path="/" element={<Home selected={selected} />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/connection" element={<Connection />} />
-          <Route path="*" element={<NotFound />} />
+          <Route
+            path="/"
+            element={<Home selected={selected} locale={locale} />}
+          />
+          <Route path="/about" element={<About locale={locale} />} />
+          <Route path="/connection" element={<Connection locale={locale} />} />
+          {(
+            [
+              'register',
+              'login',
+              'forgot-password',
+              'reset-password',
+              'verify-email',
+              'resend-verification',
+            ] as const
+          ).map((mode) => (
+            <Route
+              key={mode}
+              path={'/' + mode}
+              element={<IdentityForm key={mode} mode={mode} locale={locale} />}
+            />
+          ))}
+          <Route path="/profile" element={<AccountPage locale={locale} />} />
+          <Route path="*" element={<NotFound locale={locale} />} />
         </Routes>
       </main>
       <footer className="site-footer">
@@ -178,7 +201,8 @@ export function App() {
     </div>
   );
 }
-function Home({ selected }: { selected: Copy }) {
+function Home({ selected, locale }: { selected: Copy; locale: Locale }) {
+  const t = publicCopy[locale];
   return (
     <section className="opening" aria-labelledby="opening-title">
       <div className="opening-copy">
@@ -196,21 +220,11 @@ function Home({ selected }: { selected: Copy }) {
       <div className="publication" aria-hidden="true">
         <div className="publication-top">
           <span>ANAMNOU</span>
-          <span>A CLASS ARCHIVE</span>
+          <span>{t.archive}</span>
         </div>
-        <p className="publication-title">
-          Our lives,
-          <br />
-          in good
-          <br />
-          <em>company.</em>
-        </p>
+        <p className="publication-title">{t.cover}</p>
         <div className="publication-bottom">
-          <span>
-            The end of a chapter.
-            <br />
-            The beginning of everything else.
-          </span>
+          <span>{t.coverNote}</span>
           <span>01</span>
         </div>
       </div>
@@ -218,39 +232,26 @@ function Home({ selected }: { selected: Copy }) {
     </section>
   );
 }
-function About() {
+function About({ locale }: { locale: Locale }) {
+  const t = publicCopy[locale];
   return (
     <article className="reading">
-      <p className="eyebrow">The idea behind Anamnou</p>
-      <h1>
-        A yearbook worth
-        <br />
-        <em>coming back to.</em>
-      </h1>
-      <p className="intro">
-        Graduation is a moment. The people you share it with become part of your
-        story.
-      </p>
-      <h2>Keep the chapter. Make room for the next.</h2>
-      <p>
-        Anamnou is being built for graduating classes, starting in Haiti. The
-        vision is a shared yearbook that preserves the class as it was at
-        graduation, alongside a separate alumni space that can grow with its
-        members.
-      </p>
-      <h2>We’re at the beginning.</h2>
-      <p>
-        This release establishes the foundation. Accounts, class invitations,
-        profiles, and yearbook creation are not available yet.
-      </p>
+      <p className="eyebrow">{t.aboutLabel}</p>
+      <h1>{t.aboutTitle}</h1>
+      <p className="intro">{t.aboutIntro}</p>
+      <h2>{t.chapter}</h2>
+      <p>{t.vision}</p>
+      <h2>{t.beginning}</h2>
+      <p>{t.available}</p>
       <Link className="text-link" to="/">
-        Back to the opening page <span aria-hidden="true">↗</span>
+        {t.back}
       </Link>
     </article>
   );
 }
 type ConnectionState = 'idle' | 'loading' | 'ready' | 'error';
-export function Connection() {
+export function Connection({ locale = 'en' }: { locale?: Locale }) {
+  const t = publicCopy[locale];
   const [state, setState] = useState<ConnectionState>('idle');
   const controller = useRef<AbortController | null>(null);
   useEffect(() => () => controller.current?.abort(), []);
@@ -280,23 +281,17 @@ export function Connection() {
   }
   return (
     <section className="reading">
-      <p className="eyebrow">Connection status</p>
-      <h1>
-        A quick
-        <br />
-        <em>connection check.</em>
-      </h1>
-      <p>
-        This checks whether this installation’s required services are available.
-      </p>
+      <p className="eyebrow">{copy[locale].status}</p>
+      <h1>{t.connectionTitle}</h1>
+      <p>{t.connectionIntro}</p>
       <p role="status" aria-live="polite" className="connection-message">
         {state === 'idle'
-          ? 'Ready when you are.'
+          ? t.idle
           : state === 'loading'
-            ? 'Checking the connection…'
+            ? t.checking
             : state === 'ready'
-              ? 'Connection available.'
-              : 'We couldn’t connect. Please try again.'}
+              ? t.ready
+              : t.failed}
       </p>
       <button
         type="button"
@@ -304,25 +299,26 @@ export function Connection() {
         disabled={state === 'loading'}
       >
         {state === 'loading'
-          ? 'Checking…'
+          ? t.checking
           : state === 'error'
-            ? 'Try again'
-            : 'Check connection'}
+            ? t.retry
+            : t.check}
       </button>
       <p>
-        <Link to="/">Return home</Link>
+        <Link to="/">{t.back}</Link>
       </p>
     </section>
   );
 }
-function NotFound() {
+function NotFound({ locale }: { locale: Locale }) {
+  const t = publicCopy[locale];
   return (
     <section className="reading">
-      <p className="eyebrow">Page not found</p>
-      <h1>A missing page.</h1>
-      <p>This address doesn’t lead to a page in this edition.</p>
+      <p className="eyebrow">{t.missingLabel}</p>
+      <h1>{t.missingTitle}</h1>
+      <p>{t.missingIntro}</p>
       <Link className="text-link" to="/">
-        Return home
+        {t.back}
       </Link>
     </section>
   );

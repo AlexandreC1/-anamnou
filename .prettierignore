@@ -4,6 +4,7 @@ dist
 dist-test
 coverage
 playwright-report
+.playwright-cli
 test-results
 apps/api/src/generated
 PROJECT_BIBLE.md

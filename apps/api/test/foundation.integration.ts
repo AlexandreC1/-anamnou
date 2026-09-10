@@ -23,7 +23,7 @@ test('real API is ready against migrated PostgreSQL and initialized MinIO', asyn
     const specification = await schema.text();
     assert.match(specification, /\/health/);
     assert.match(specification, /\/ready/);
-    assert.doesNotMatch(specification, /\/auth/);
+    assert.match(specification, /\/auth\/register/);
     const cors = await fetch(url + '/health', {
       headers: { Origin: 'https://untrusted.example' },
     });

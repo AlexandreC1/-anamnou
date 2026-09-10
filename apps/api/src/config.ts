@@ -37,9 +37,25 @@ const schema = z
     STORAGE_BUCKET: z.string().regex(/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/),
     STORAGE_ACCESS_KEY: z.string().min(3),
     STORAGE_SECRET_KEY: z.string().min(16),
+    SMTP_HOST: z.string().min(1).default('127.0.0.1'),
+    SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(1025),
+    SMTP_USER: z.string().default(''),
+    SMTP_PASSWORD: z.string().default(''),
+    MAIL_FROM: z.string().email().default('yearbook@localhost.test'),
   })
   .superRefine((value, context) => {
     if (value.APP_ENV === 'production') {
+      if (
+        !value.SMTP_USER ||
+        !value.SMTP_PASSWORD ||
+        value.MAIL_FROM.endsWith('.test')
+      ) {
+        context.addIssue({
+          code: 'custom',
+          path: ['SMTP_USER'],
+          message: 'Production SMTP credentials and sender required.',
+        });
+      }
       for (const key of ['PUBLIC_WEB_URL', 'STORAGE_ENDPOINT'] as const) {
         if (parseUrl(value[key])?.protocol !== 'https:') {
           context.addIssue({

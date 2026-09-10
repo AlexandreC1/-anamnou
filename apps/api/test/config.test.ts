@@ -14,7 +14,11 @@ test('environment rejects missing variables without exposing input values', () =
   );
 });
 test('environment rejects out-of-range ports and non-HTTP storage endpoints', () => {
-  const valid = { ...isolatedEnvironment(), API_PORT: '4000' };
+  const valid = {
+    ...isolatedEnvironment(),
+    API_PORT: '4000',
+    SMTP_PORT: '1025',
+  };
   assert.throws(() => parseEnvironment({ ...valid, API_PORT: '65536' }));
   assert.throws(() =>
     parseEnvironment({ ...valid, STORAGE_ENDPOINT: 'file:///etc/passwd' }),
@@ -30,6 +34,7 @@ test('production environment requires HTTPS and explicit secrets', () => {
   const valid = {
     ...isolatedEnvironment(),
     API_PORT: '4000',
+    SMTP_PORT: '587',
     APP_ENV: 'production',
   };
   assert.throws(() => parseEnvironment(valid));
@@ -38,6 +43,9 @@ test('production environment requires HTTPS and explicit secrets', () => {
       ...valid,
       PUBLIC_WEB_URL: 'https://example.org',
       STORAGE_ENDPOINT: 'https://storage.example.org',
+      SMTP_USER: 'smtp-test-user',
+      SMTP_PASSWORD: 'smtp-test-password',
+      MAIL_FROM: 'yearbook@example.org',
     }).APP_ENV,
     'production',
   );

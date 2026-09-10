@@ -1,4 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { parseEnv } from 'node:util';
+
+const testDatabaseUrl = parseEnv(
+  readFileSync('.env.test', 'utf8'),
+).DATABASE_URL;
+if (!testDatabaseUrl)
+  throw new Error('Run npm run test:setup before Playwright.');
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -24,6 +32,7 @@ export default defineConfig({
         API_PORT: '4100',
         PUBLIC_WEB_URL: 'http://127.0.0.1:3100',
         APP_ENV: 'test',
+        DATABASE_URL: testDatabaseUrl,
       },
       reuseExistingServer: false,
       timeout: 60000,

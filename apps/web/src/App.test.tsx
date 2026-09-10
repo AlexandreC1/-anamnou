@@ -21,7 +21,7 @@ describe('foundation shell', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'A yearbook worth',
     );
-    expect(screen.getByText(/Accounts, class invitations/)).toBeVisible();
+    expect(screen.getByText(/create and verify your account/)).toBeVisible();
   });
   it('recovers from a missing route', () => {
     render(
