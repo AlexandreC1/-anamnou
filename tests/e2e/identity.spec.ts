@@ -52,6 +52,9 @@ test('real registration, inbox verification, login, profile, logout and password
   await expect(page.getByRole('status')).toContainText('email is verified');
   await expect(page).not.toHaveURL(/token=/);
   await page.getByRole('link', { name: 'Sign in', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Sign in', exact: true }),
+  ).toBeVisible();
   await page.getByLabel('Email address').fill(email);
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -74,6 +77,9 @@ test('real registration, inbox verification, login, profile, logout and password
   await page.goto('/profile');
   await expect(page).toHaveURL(/\/login$/);
   await page.getByRole('link', { name: 'Forgot your password?' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Recover your account', exact: true }),
+  ).toBeVisible();
   await page.getByLabel('Email address').fill(email);
   await page.getByRole('button', { name: 'Send recovery link' }).click();
   await expect(page.getByRole('status')).toContainText(
@@ -84,6 +90,9 @@ test('real registration, inbox verification, login, profile, logout and password
   await page.getByRole('button', { name: 'Choose a new password' }).click();
   await expect(page.getByRole('status')).toContainText('Password updated');
   await page.getByRole('link', { name: 'Sign in', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Sign in', exact: true }),
+  ).toBeVisible();
   await page.getByLabel('Email address').fill(email);
   await page.getByLabel('Password', { exact: true }).fill(replacement);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();

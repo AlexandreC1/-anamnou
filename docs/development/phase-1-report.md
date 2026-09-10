@@ -102,8 +102,11 @@ tests ran. Screenshots were inspected for desktop and mobile, including Creole.
 
 Failures found and fixed during verification: accessible password labels included
 hint text; mobile language choice was squeezed; an E2E navigation interrupted
-logout before its response; fresh test-database readiness lacked the operational
-seed. Tests were corrected or setup/UI fixed without bypassing validations.
+logout before its response; shared field labels could match a departing form
+before route replacement; fresh test-database readiness lacked the operational
+seed. Tests now await the destination heading. The identity suite passed three
+consecutive repetitions on both desktop and mobile (12 checks), with retries
+disabled. Tests were corrected or setup/UI fixed without bypassing validations.
 
 ## Security evidence
 
