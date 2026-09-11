@@ -16,6 +16,15 @@ export default defineConfig(({ mode }) => {
     },
   };
   return {
+    define: {
+      'import.meta.env.LOCAL_MAIL_INBOX': JSON.stringify(
+        environment.APP_ENV !== 'production' &&
+          ['127.0.0.1', 'localhost'].includes(
+            environment.SMTP_HOST ?? '127.0.0.1',
+          ) &&
+          (environment.SMTP_PORT ?? '1025') === '1025',
+      ),
+    },
     plugins: [react()],
     server: { host: '127.0.0.1', port, strictPort: true, proxy },
     preview: { host: '127.0.0.1', port, strictPort: true, proxy },

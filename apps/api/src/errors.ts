@@ -5,6 +5,7 @@ import {
   type ExceptionFilter,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { Prisma } from './generated/prisma/client.js';
 
 export interface SafeErrorEvent {
   requestId: string;
@@ -38,7 +39,12 @@ export class SafeErrorFilter implements ExceptionFilter {
             : 500
         : 500;
     const statusCode =
-      error instanceof HttpException ? error.getStatus() : parserStatus;
+      error instanceof HttpException
+        ? error.getStatus()
+        : error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === 'P2002'
+          ? 409
+          : parserStatus;
     const requestId = String(response.getHeader('x-request-id'));
     if (statusCode >= 500) this.reporter.report({ requestId, statusCode });
     response.status(statusCode).json({

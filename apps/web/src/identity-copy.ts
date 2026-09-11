@@ -18,9 +18,6 @@ const en = {
   introduction: 'Your next chapter starts with you.',
   privacy:
     'Your email stays private. Choose a name your classmates will recognize.',
-  sent: 'If this address is eligible, an email will arrive with your next step. Check your inbox and spam folder.',
-  registered:
-    'Check your inbox to verify your email before signing in. Already registered? Sign in or request a fresh verification link.',
   verified: 'Your email is verified. You can now sign in.',
   resetDone: 'Password updated. Sign in with your new password.',
   saved: 'Your changes are saved.',
@@ -35,7 +32,7 @@ const en = {
   expired: 'Your session has ended. Sign in again.',
   missing: 'Open the link from your email, or request a fresh link below.',
   profileIntro:
-    'This is your personal account. Class spaces will arrive in the next release.',
+    'This is your personal account. Your classes are ready when you are.',
   retry: 'Try again',
   language: 'Preferred email language',
 };
@@ -62,9 +59,6 @@ export const identityCopy: Record<Locale, IdentityCopy> = {
     introduction: 'Pwochen chapit ou a kòmanse avèk ou.',
     privacy:
       'Imèl ou rete prive. Chwazi yon non kamarad klas ou yo ap rekonèt.',
-    sent: 'Si adrès sa a kalifye, w ap resevwa yon imèl ak pwochen etap la. Tcheke bwat resepsyon ak spam ou.',
-    registered:
-      'Tcheke imèl ou pou verifye adrès ou anvan ou konekte. Ou deja enskri? Konekte oswa mande yon nouvo lyen verifikasyon.',
     verified: 'Imèl ou verifye. Ou ka konekte kounye a.',
     resetDone: 'Modpas ou chanje. Konekte avèk nouvo modpas ou a.',
     saved: 'Chanjman ou yo anrejistre.',
@@ -78,8 +72,7 @@ export const identityCopy: Record<Locale, IdentityCopy> = {
     limited: 'Twòp tantativ. Tann 15 minit anvan ou eseye ankò.',
     expired: 'Sesyon ou fini. Konekte ankò.',
     missing: 'Louvri lyen ki nan imèl ou a, oswa mande yon nouvo lyen anba a.',
-    profileIntro:
-      'Sa a se kont pèsonèl ou. Espas klas yo ap vini nan pwochen vèsyon an.',
+    profileIntro: 'Sa a se kont pèsonèl ou. Klas ou yo pare lè ou pare.',
     retry: 'Eseye ankò',
     language: 'Lang ou prefere pou imèl',
   },
@@ -103,9 +96,6 @@ export const identityCopy: Record<Locale, IdentityCopy> = {
     introduction: 'Votre prochain chapitre commence avec vous.',
     privacy:
       'Votre e-mail reste privé. Choisissez un nom que vos camarades reconnaîtront.',
-    sent: 'Si cette adresse est éligible, un e-mail vous indiquera la prochaine étape. Vérifiez votre boîte de réception et vos indésirables.',
-    registered:
-      'Vérifiez votre adresse via l’e-mail reçu avant de vous connecter. Déjà inscrit ? Connectez-vous ou demandez un nouveau lien de vérification.',
     verified: 'Votre e-mail est vérifié. Vous pouvez vous connecter.',
     resetDone:
       'Mot de passe modifié. Connectez-vous avec votre nouveau mot de passe.',
@@ -121,8 +111,7 @@ export const identityCopy: Record<Locale, IdentityCopy> = {
     expired: 'Votre session est terminée. Reconnectez-vous.',
     missing:
       'Ouvrez le lien reçu par e-mail ou demandez un nouveau lien ci-dessous.',
-    profileIntro:
-      'Voici votre compte personnel. Les espaces de classe arriveront dans la prochaine version.',
+    profileIntro: 'Voici votre compte personnel. Vos classes vous attendent.',
     retry: 'Réessayer',
     language: 'Langue préférée pour les e-mails',
   },
@@ -146,9 +135,6 @@ export const identityCopy: Record<Locale, IdentityCopy> = {
     introduction: 'Tu próximo capítulo empieza contigo.',
     privacy:
       'Tu correo se mantiene privado. Elige un nombre que tus compañeros reconozcan.',
-    sent: 'Si esta dirección cumple los requisitos, recibirás un correo con el siguiente paso. Revisa tu bandeja de entrada y el correo no deseado.',
-    registered:
-      'Revisa tu correo para verificar tu dirección antes de iniciar sesión. ¿Ya tienes cuenta? Inicia sesión o solicita un nuevo enlace de verificación.',
     verified: 'Tu correo está verificado. Ya puedes iniciar sesión.',
     resetDone: 'Contraseña actualizada. Inicia sesión con tu nueva contraseña.',
     saved: 'Tus cambios están guardados.',
@@ -163,8 +149,7 @@ export const identityCopy: Record<Locale, IdentityCopy> = {
       'Demasiados intentos. Espera 15 minutos antes de volver a intentarlo.',
     expired: 'Tu sesión ha terminado. Inicia sesión de nuevo.',
     missing: 'Abre el enlace de tu correo o solicita uno nuevo abajo.',
-    profileIntro:
-      'Esta es tu cuenta personal. Los espacios de clase llegarán en la próxima versión.',
+    profileIntro: 'Esta es tu cuenta personal. Tus clases te esperan.',
     retry: 'Intentar de nuevo',
     language: 'Idioma preferido para los correos',
   },

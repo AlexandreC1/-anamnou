@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { identityCopy, type Locale } from './identity-copy';
+import { classCopy } from './class-copy';
+import { deliveryCopy } from './delivery-copy';
 import {
   ApiError,
   identityRequest,
@@ -33,6 +35,8 @@ export function IdentityForm({ mode, locale }: { mode: Mode; locale: Locale }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
+  const delivery = deliveryCopy[locale];
   const [token] = useState(
     () => new URLSearchParams(window.location.hash.slice(1)).get('token') ?? '',
   );
@@ -75,6 +79,7 @@ export function IdentityForm({ mode, locale }: { mode: Mode; locale: Locale }) {
               ? { token, password }
               : { email };
     setBusy(true);
+    setSubmittedEmail(email);
     setError('');
     try {
       const result = await identityRequest('/auth/' + mode, body);
@@ -91,22 +96,55 @@ export function IdentityForm({ mode, locale }: { mode: Mode; locale: Locale }) {
   return (
     <section className="identity-layout">
       <div className="identity-intro">
-        <p className="eyebrow">TÈLÒ</p>
-        <h1>{title}</h1>
+        <p className="eyebrow">Anamnou</p>
+        <h1>{success && !tokenMode ? delivery.title : title}</h1>
         <p className="intro">{t.introduction}</p>
         <p>{t.privacy}</p>
       </div>
       <div className="identity-panel">
         {success ? (
-          <p ref={message} tabIndex={-1} role="status">
-            {mode === 'register'
-              ? t.registered
-              : mode === 'verify-email'
+          <div className="delivery-next">
+            <p ref={message} tabIndex={-1} role="status">
+              {mode === 'verify-email'
                 ? t.verified
                 : mode === 'reset-password'
                   ? t.resetDone
-                  : t.sent}
-          </p>
+                  : delivery.received}
+            </p>
+            {!tokenMode && (
+              <>
+                <p>
+                  <strong>{submittedEmail}</strong>
+                </p>
+                <p>
+                  {mode === 'forgot-password'
+                    ? delivery.recovery
+                    : delivery.verify}
+                </p>
+                {import.meta.env.LOCAL_MAIL_INBOX ? (
+                  <>
+                    <p>{delivery.local}</p>
+                    <a
+                      className="primary-link"
+                      href="http://localhost:8025"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {delivery.inbox}
+                    </a>
+                  </>
+                ) : (
+                  <p>{delivery.missing}</p>
+                )}
+                <button
+                  className="secondary-button"
+                  onClick={() => setSuccess(false)}
+                >
+                  {delivery.change}
+                </button>
+              </>
+            )}
+          </div>
         ) : tokenMode && !/^[a-f0-9]{64}$/.test(token) ? (
           <p role="alert">{t.missing}</p>
         ) : (
@@ -131,6 +169,7 @@ export function IdentityForm({ mode, locale }: { mode: Mode; locale: Locale }) {
                 {t.email}
                 <input
                   name="email"
+                  defaultValue={submittedEmail}
                   type="email"
                   autoComplete="email"
                   required
@@ -260,7 +299,7 @@ export function AccountPage({ locale }: { locale: Locale }) {
   return (
     <section className="identity-layout">
       <div className="identity-intro">
-        <p className="eyebrow">TÈLÒ</p>
+        <p className="eyebrow">Anamnou</p>
         <h1>{t.account}</h1>
         <p className="intro">{t.profileIntro}</p>
       </div>
@@ -303,6 +342,7 @@ export function AccountPage({ locale }: { locale: Locale }) {
             </form>
             {saved && <p role="status">{t.saved}</p>}
             <div className="account-links">
+              <Link to="/classes">{classCopy[locale].myClasses}</Link>
               <Link to="/forgot-password">{t.reset}</Link>
               <button
                 className="secondary-button"

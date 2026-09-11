@@ -46,6 +46,9 @@ model User {
   tokens IdentityToken[]
   auditLogs AuditLog[]
   emailJobs IdentityEmailJob[]
+  schools SchoolAdmin[]
+  memberships ClassMembership[]
+  invitations Invitation[]
 }
 
 model Session {
@@ -75,8 +78,15 @@ model AuditLog {
   actor User? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
   action String @db.VarChar(64)
   targetId String @db.Uuid
+  metadata Json @default("{}")
+  schoolId String? @db.Uuid
+  classId String? @db.Uuid
+  school School? @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  class Class? @relation(fields: [classId], references: [id], onDelete: Restrict)
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   @@index([actorUserId, createdAt])
+  @@index([schoolId, createdAt])
+  @@index([classId, createdAt])
 }
 
 // Shared across API instances; keys are hashes of normalized account identifiers.
@@ -98,4 +108,106 @@ model IdentityEmailJob {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   @@unique([userId, purpose])
   @@index([nextAttemptAt])
+}
+
+enum ClassRole {
+  MEMBER
+  CLASS_ADMIN
+  STAFF
+  GUEST
+}
+
+enum MembershipStatus {
+  ACTIVE
+  REMOVED
+}
+
+enum InvitationStatus {
+  ACTIVE
+  REVOKED
+}
+
+model School {
+  id String @id @default(uuid()) @db.Uuid
+  name String @db.VarChar(120)
+  slug String @unique @db.VarChar(80)
+  location String? @db.VarChar(120)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  admins SchoolAdmin[]
+  classes Class[]
+  auditLogs AuditLog[]
+}
+
+model SchoolAdmin {
+  schoolId String @db.Uuid
+  userId String @db.Uuid
+  school School @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  @@id([schoolId, userId])
+  @@index([userId])
+}
+
+model Class {
+  id String @id @default(uuid()) @db.Uuid
+  schoolId String @db.Uuid
+  school School @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  name String @db.VarChar(120)
+  slug String @db.VarChar(80)
+  graduationYear Int
+  motto String? @db.VarChar(240)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  memberships ClassMembership[]
+  invitations Invitation[]
+  auditLogs AuditLog[]
+  @@unique([schoolId, slug])
+}
+
+model ClassMembership {
+  id String @id @default(uuid()) @db.Uuid
+  classId String @db.Uuid
+  userId String @db.Uuid
+  class Class @relation(fields: [classId], references: [id], onDelete: Restrict)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  role ClassRole @default(MEMBER)
+  status MembershipStatus @default(ACTIVE)
+  joinedAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  acceptances InvitationAcceptance[]
+  @@unique([classId, userId])
+  @@unique([id, classId])
+  @@index([userId, status])
+  @@index([classId, status, role])
+}
+
+model Invitation {
+  id String @id @default(uuid()) @db.Uuid
+  classId String @db.Uuid
+  createdById String @db.Uuid
+  class Class @relation(fields: [classId], references: [id], onDelete: Restrict)
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  tokenHash String @unique @db.Char(64)
+  role ClassRole @default(MEMBER)
+  status InvitationStatus @default(ACTIVE)
+  expiresAt DateTime @db.Timestamptz(3)
+  maxUses Int
+  usedCount Int @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  acceptances InvitationAcceptance[]
+  @@unique([id, classId])
+  @@index([classId, createdAt])
+}
+
+model InvitationAcceptance {
+  invitationId String @db.Uuid
+  membershipId String @db.Uuid
+  classId String @db.Uuid
+  invitation Invitation @relation(fields: [invitationId, classId], references: [id, classId], onDelete: Restrict)
+  membership ClassMembership @relation(fields: [membershipId, classId], references: [id, classId], onDelete: Restrict)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  @@id([invitationId, membershipId])
+  @@index([membershipId, classId])
 }

@@ -11,5 +11,5 @@ Root TypeScript and ESLint configuration is shared directly. Do not create
 packages/shared, packages/config or packages/ui merely to populate the tree:
 extract them when a second consumer exists.
 
-Infrastructure identifiers use yearbook; TÈLÒ (formerly Anamnou) is display branding. No cloud
+Infrastructure identifiers use yearbook; Anamnou is display branding. No cloud
 provider is selected. Applications run on the host and infrastructure in Compose.
