@@ -1,14 +1,20 @@
-# Telos — TÈLÒ
+# Anamnou
 
 **Yon chapit fini. Yon istwa rete.**
 
 A digital yearbook platform for graduating classes, starting in Haiti.
 
-**Current scope: Phase 1 identity.** The React/NestJS foundation now supports
-registration, verification, login/logout, revocable sessions, password recovery,
-and personal account settings. PostgreSQL, private object storage and email
-delivery run locally. Class creation, media uploads, voting and publishing follow
-in their later phases. See [identity setup](docs/development/identity.md).
+**Current scope: Phase 2 schools and classes.** The React/NestJS application supports
+verified accounts, school/class creation, memberships, role management, invitation
+links/codes/QR and a private member directory in Haitian Creole, French, English
+and Spanish. PostgreSQL, private object storage and email delivery run locally.
+Photos, yearbook editing, voting and publishing belong to later phases.
+See [identity setup](docs/development/identity.md) and [class setup](docs/development/classes.md).
+
+**Waiting for a verification email?** In the local preview, open
+[the test inbox](http://localhost:8025), search for your email address and open the
+newest verification message. Local mail is captured there, not sent to your
+personal mailbox. The registration and recovery screens link to this inbox.
 
 Read [PROJECT_BIBLE.md](PROJECT_BIBLE.md) and
 [the engineering contract](docs/ASTRA_ENGINEERING_CONTRACT.md) before changing code.

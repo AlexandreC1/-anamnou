@@ -14,6 +14,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import express from 'express';
 import { IdentityModule } from './auth/module.js';
+import { ClassesModule } from './classes/module.js';
 import { type Environment } from './config.js';
 import { createDatabase, type Database } from './database.js';
 import {
@@ -44,9 +45,13 @@ class FoundationModule {
     analytics: Analytics,
     environment: Environment,
   ): DynamicModule {
+    const identity = IdentityModule.register(database, environment);
     return {
       module: FoundationModule,
-      imports: [IdentityModule.register(database, environment)],
+      imports: [
+        identity,
+        ClassesModule.register(database, identity, environment.PUBLIC_WEB_URL),
+      ],
       controllers: [HealthController],
       providers: [
         ReadinessService,
@@ -171,14 +176,14 @@ export async function createApp(environment: Environment) {
     app,
     new DocumentBuilder()
       .setTitle('Yearbook API')
-      .setVersion('0.1.0')
+      .setVersion('0.2.0')
       .addCookieAuth(
         'yearbook_session',
         { type: 'apiKey', in: 'cookie' },
         'session',
       )
       .setDescription(
-        'Operations and identity. Mutations require JSON and the configured web Origin. Opaque HttpOnly sessions; verification required before login.',
+        'Operations, identity, schools, classes and invitations. Mutations require JSON and the configured web Origin. Opaque HttpOnly sessions; verification required before login. Collections use page and pageSize (maximum 50).',
       )
       .build(),
   );

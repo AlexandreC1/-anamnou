@@ -3,6 +3,16 @@ import { Link, NavLink, Route, Routes, useLocation } from 'react-router';
 import { AccountPage, IdentityForm } from './Identity';
 import { identityCopy } from './identity-copy';
 import { publicCopy } from './public-copy';
+import {
+  ClassesHome,
+  SchoolForm,
+  SchoolManage,
+  CreateClass,
+  ClassHome,
+  JoinClass,
+} from './Classes';
+import { ClassManage, MemberDirectory } from './ClassManage';
+import { classCopy } from './class-copy';
 
 type Locale = 'ht' | 'fr' | 'en' | 'es';
 const localeLabels: Record<Locale, string> = {
@@ -41,7 +51,7 @@ const copy: Record<Locale, Copy> = {
     intro:
       'Moun yo. Ti moman yo. Bagay nou pa janm vle bliye. Yon kay pou istwa klas k ap gradye nou an.',
     discover: 'Dekouvri lide a',
-    note: 'Premye edisyon an ap pran fòm. Espas klas yo ap louvri nan yon pwochen vèsyon.',
+    note: 'Premye edisyon an ap pran fòm. Kreye klas ou epi envite kamarad ou yo.',
   },
   fr: {
     skip: 'Aller au contenu',
@@ -57,7 +67,7 @@ const copy: Record<Locale, Copy> = {
     intro:
       'Les personnes. Les petits moments. Ce que nous ne voulons jamais oublier. Un lieu pour raconter la classe qui obtient son diplôme.',
     discover: "Découvrir l'idée",
-    note: 'La première édition prend forme. Les espaces de classe ouvriront dans une prochaine version.',
+    note: 'La première édition prend forme. Créez votre classe et invitez vos camarades.',
   },
   en: {
     skip: 'Skip to content',
@@ -73,7 +83,7 @@ const copy: Record<Locale, Copy> = {
     intro:
       'The people. The small moments. The things we never want to forget. A home for the story of your graduating class.',
     discover: 'Discover the idea',
-    note: 'The first edition is taking shape. Class spaces will open in a future release.',
+    note: 'The first edition is taking shape. Create your class and invite your classmates.',
   },
   es: {
     skip: 'Ir al contenido',
@@ -89,7 +99,7 @@ const copy: Record<Locale, Copy> = {
     intro:
       'Las personas. Los pequeños momentos. Lo que nunca queremos olvidar. Un hogar para la historia de tu clase graduada.',
     discover: 'Descubre la idea',
-    note: 'La primera edición está tomando forma. Los espacios de clase llegarán en una versión futura.',
+    note: 'La primera edición está tomando forma. Crea tu clase e invita a tus compañeros.',
   },
 };
 function RouteFocus({ locale }: { locale: Locale }) {
@@ -97,8 +107,7 @@ function RouteFocus({ locale }: { locale: Locale }) {
   const previous = useRef(pathname);
   useEffect(() => {
     document.title =
-      (document.querySelector('h1')?.textContent ?? 'Telos') +
-      ' — Telos — TÈLÒ';
+      (document.querySelector('h1')?.textContent ?? 'Anamnou') + ' — Anamnou';
     if (previous.current !== pathname) {
       document.getElementById('main')?.focus();
       previous.current = pathname;
@@ -157,15 +166,16 @@ export function App() {
         <Link
           className="wordmark"
           to="/"
-          aria-label={`TÈLÒ — ${selected.home}`}
+          aria-label={`Anamnou — ${selected.home}`}
         >
-          TÈLÒ<span aria-hidden="true">.</span>
+          Anamnou<span aria-hidden="true">.</span>
         </Link>
         <nav aria-label={selected.nav}>
           <NavLink to="/" end>
             {selected.home}
           </NavLink>
           <NavLink to="/about">{selected.idea}</NavLink>
+          <NavLink to="/classes">{classCopy[locale].myClasses}</NavLink>
           <NavLink to="/profile">{identityCopy[locale].account}</NavLink>
         </nav>
         <LanguageChoice locale={locale} onChange={setLocale} />
@@ -173,6 +183,26 @@ export function App() {
       <RouteFocus locale={locale} />
       <main id="main" tabIndex={-1}>
         <Routes>
+          <Route path="/classes" element={<ClassesHome locale={locale} />} />
+          <Route path="/schools/new" element={<SchoolForm locale={locale} />} />
+          <Route
+            path="/schools/:id/manage"
+            element={<SchoolManage locale={locale} />}
+          />
+          <Route
+            path="/classes/new"
+            element={<CreateClass locale={locale} />}
+          />
+          <Route path="/classes/:id" element={<ClassHome locale={locale} />} />
+          <Route
+            path="/classes/:id/manage"
+            element={<ClassManage locale={locale} />}
+          />
+          <Route
+            path="/classes/:id/members"
+            element={<MemberDirectory locale={locale} />}
+          />
+          <Route path="/join" element={<JoinClass locale={locale} />} />
           <Route
             path="/"
             element={<Home selected={selected} locale={locale} />}
@@ -223,7 +253,7 @@ function Home({ selected, locale }: { selected: Copy; locale: Locale }) {
       </div>
       <div className="publication" aria-hidden="true">
         <div className="publication-top">
-          <span>TÈLÒ</span>
+          <span>Anamnou</span>
           <span>{t.archive}</span>
         </div>
         <p className="publication-title">{t.cover}</p>

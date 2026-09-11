@@ -1,15 +1,15 @@
 import type { Locale } from './identity-copy';
 const en = {
-  aboutLabel: 'The idea behind TÈLÒ',
+  aboutLabel: 'The idea behind Anamnou',
   aboutTitle: 'A yearbook worth coming back to.',
   aboutIntro:
     'Graduation is a moment. The people you share it with become part of your story.',
   chapter: 'Keep the chapter. Make room for the next.',
   vision:
-    'TÈLÒ is being built for graduating classes, starting in Haiti. A shared yearbook will preserve the class as it was at graduation, alongside a separate alumni space that can grow with its members.',
+    'Anamnou is being built for graduating classes, starting in Haiti. A shared yearbook will preserve the class as it was at graduation, alongside a separate alumni space that can grow with its members.',
   beginning: 'We’re at the beginning.',
   available:
-    'You can now create and verify your account. Class invitations and yearbook creation will follow in future releases.',
+    'You can now create and verify your account, create a class and invite classmates. Yearbook creation will follow in a future release.',
   back: 'Return home',
   connectionTitle: 'A quick connection check.',
   connectionIntro:
@@ -30,16 +30,16 @@ const en = {
 export const publicCopy: Record<Locale, typeof en> = {
   en,
   ht: {
-    aboutLabel: 'Lide ki dèyè TÈLÒ',
+    aboutLabel: 'Lide ki dèyè Anamnou',
     aboutTitle: 'Yon liv klas ou anvi retounen li.',
     aboutIntro:
       'Gradyasyon se yon moman. Moun ou pataje l avèk yo vin fè pati istwa ou.',
     chapter: 'Konsève chapit la. Fè plas pou pwochen an.',
     vision:
-      'TÈLÒ ap fèt pou klas k ap gradye, kòmanse ann Ayiti. Yon liv klas kolektif pral konsève klas la jan li te ye nan gradyasyon, ansanm ak yon espas apa pou ansyen elèv ki ka grandi avèk yo.',
+      'Anamnou ap fèt pou klas k ap gradye, kòmanse ann Ayiti. Yon liv klas kolektif pral konsève klas la jan li te ye nan gradyasyon, ansanm ak yon espas apa pou ansyen elèv ki ka grandi avèk yo.',
     beginning: 'Nou nan kòmansman an.',
     available:
-      'Ou ka kreye epi verifye kont ou kounye a. Envitasyon pou klas ak kreyasyon liv klas ap vini nan pwochen vèsyon yo.',
+      'Ou ka kreye epi verifye kont ou, kreye yon klas epi envite kamarad ou yo. Kreyasyon liv klas ap vini nan yon pwochen vèsyon.',
     back: 'Retounen akèy',
     connectionTitle: 'Yon ti tès koneksyon.',
     connectionIntro:
@@ -58,16 +58,16 @@ export const publicCopy: Record<Locale, typeof en> = {
     coverNote: 'Fen yon chapit. Kòmansman tout rès la.',
   },
   fr: {
-    aboutLabel: 'L’idée derrière TÈLÒ',
+    aboutLabel: 'L’idée derrière Anamnou',
     aboutTitle: 'Un album de classe que l’on aime retrouver.',
     aboutIntro:
       'La remise des diplômes est un moment. Les personnes qui le partagent avec vous entrent dans votre histoire.',
     chapter: 'Gardez ce chapitre. Accueillez le suivant.',
     vision:
-      'TÈLÒ est conçu pour les promotions, en commençant par Haïti. Un album collectif préservera la classe telle qu’elle était à la remise des diplômes, avec un espace distinct pour les anciens élèves qui évoluera avec eux.',
+      'Anamnou est conçu pour les promotions, en commençant par Haïti. Un album collectif préservera la classe telle qu’elle était à la remise des diplômes, avec un espace distinct pour les anciens élèves qui évoluera avec eux.',
     beginning: 'Nous en sommes au début.',
     available:
-      'Vous pouvez créer et vérifier votre compte. Les invitations de classe et la création d’albums arriveront dans de prochaines versions.',
+      'Vous pouvez créer et vérifier votre compte, créer une classe et inviter vos camarades. La création d’albums arrivera dans une prochaine version.',
     back: 'Retour à l’accueil',
     connectionTitle: 'Un rapide test de connexion.',
     connectionIntro:
@@ -86,16 +86,16 @@ export const publicCopy: Record<Locale, typeof en> = {
     coverNote: 'La fin d’un chapitre. Le début de tout le reste.',
   },
   es: {
-    aboutLabel: 'La idea detrás de TÈLÒ',
+    aboutLabel: 'La idea detrás de Anamnou',
     aboutTitle: 'Un anuario al que vale la pena volver.',
     aboutIntro:
       'La graduación es un momento. Las personas con quienes lo compartes se vuelven parte de tu historia.',
     chapter: 'Conserva este capítulo. Haz sitio para el siguiente.',
     vision:
-      'TÈLÒ se está creando para las clases que se gradúan, empezando por Haití. Un anuario compartido conservará la clase tal como era al graduarse, junto a un espacio separado para antiguos alumnos que crecerá con ellos.',
+      'Anamnou se está creando para las clases que se gradúan, empezando por Haití. Un anuario compartido conservará la clase tal como era al graduarse, junto a un espacio separado para antiguos alumnos que crecerá con ellos.',
     beginning: 'Estamos empezando.',
     available:
-      'Ya puedes crear y verificar tu cuenta. Las invitaciones de clase y la creación del anuario llegarán en futuras versiones.',
+      'Ya puedes crear y verificar tu cuenta, crear una clase e invitar a tus compañeros. La creación del anuario llegará en una próxima versión.',
     back: 'Volver al inicio',
     connectionTitle: 'Una prueba rápida de conexión.',
     connectionIntro:

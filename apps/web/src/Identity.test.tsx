@@ -34,7 +34,7 @@ it('registration preserves input after a network failure and recovers on retry',
     screen.getByRole('button', { name: 'Create your account' }),
   );
   expect(await screen.findByRole('status')).toHaveTextContent(
-    'Check your inbox',
+    'Request received.',
   );
   expect(request).toHaveBeenCalledTimes(2);
 });
@@ -50,4 +50,40 @@ it('an absent recovery token offers a fresh link rather than an unusable form', 
     screen.getByRole('link', { name: 'Récupérez votre compte' }),
   ).toHaveAttribute('href', '/forgot-password');
   expect(screen.queryByLabelText('Mot de passe')).not.toBeInTheDocument();
+});
+
+it('French local verification gives a concrete inbox action and lets the reader correct their email', async () => {
+  vi.stubEnv('LOCAL_MAIL_INBOX', 'true');
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    new Response('{"status":"accepted"}'),
+  );
+  try {
+    render(
+      <MemoryRouter>
+        <IdentityForm mode="resend-verification" locale="fr" />
+      </MemoryRouter>,
+    );
+    await userEvent.type(
+      screen.getByLabelText('Adresse e-mail'),
+      'reader@example.test',
+    );
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Envoyer un lien de vérification' }),
+    );
+    expect(
+      await screen.findByRole('heading', { name: 'Consultez votre e-mail' }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole('link', { name: 'Ouvrir la boîte de test' }),
+    ).toHaveAttribute('href', 'http://localhost:8025');
+    expect(screen.queryByText(/éligible/)).not.toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Utiliser une autre adresse e-mail' }),
+    );
+    expect(screen.getByLabelText('Adresse e-mail')).toHaveValue(
+      'reader@example.test',
+    );
+  } finally {
+    vi.unstubAllEnvs();
+  }
 });
