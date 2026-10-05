@@ -119,12 +119,63 @@ try {
         motto: 'A chapter we share',
       },
     });
-    for (const user of users)
-      await tx.classMembership.upsert({
+    for (const user of users) {
+      const membership = await tx.classMembership.upsert({
         where: { classId_userId: { classId, userId: user.id } },
         update: {},
         create: { classId, userId: user.id, role: user.role },
       });
+      await tx.profile.upsert({
+        where: { membershipId: membership.id },
+        update: {},
+        create: {
+          classId,
+          membershipId: membership.id,
+          displayName: user.displayName,
+          visibility: 'CLASS',
+          bio: 'A fictional profile for exploring the local development yearbook.',
+          quote: 'A chapter we share. A story we keep.',
+          activities: 'Reading, music, and class projects',
+        },
+      });
+    }
+    await tx.yearbook.upsert({
+      where: { classId },
+      update: {},
+      create: {
+        classId,
+        title: 'A chapter we share',
+        theme: 'PAPER',
+        sections: {
+          create: [
+            {
+              position: 0,
+              type: 'MESSAGE',
+              title: 'Before the next chapter',
+              body: 'This is a fictional development edition. Replace these words with your class message as you explore the editor.',
+            },
+            {
+              position: 1,
+              type: 'MEMBERS',
+              title: 'The people in our story',
+              body: '',
+            },
+            {
+              position: 2,
+              type: 'STAFF',
+              title: 'Those who helped us grow',
+              body: '',
+            },
+            {
+              position: 3,
+              type: 'QUOTES',
+              title: 'Words to take with us',
+              body: '',
+            },
+          ],
+        },
+      },
+    });
     await tx.auditLog.create({
       data: {
         actorUserId: users[0].id,

@@ -1,0 +1,1204 @@
+/* Publication workspace: compact navigation and a full-width edition canvas. */
+.site-workspace {
+  max-width: 1440px;
+  padding: 0 3rem;
+}
+.class-workspace {
+  padding: 0 0 4rem;
+}
+.workspace-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem 2rem;
+  padding: 1rem 0 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+.workspace-context {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.workspace-context p {
+  margin: 0;
+}
+.workspace-context .eyebrow {
+  font-size: 0.65rem;
+}
+.workspace-context .eyebrow a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+}
+.workspace-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.workspace-school {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.workspace-privacy {
+  margin: 0;
+  font-size: 0.7rem;
+  align-self: center;
+  color: var(--muted);
+}
+.workspace-nav {
+  grid-column: 1/-1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.75rem;
+}
+.workspace-nav a {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  padding: 0.65rem 0;
+  font-size: 0.85rem;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+.workspace-nav a[aria-current='page'] {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.workspace-nav a:hover {
+  text-decoration: underline;
+}
+.workspace-content {
+  min-width: 0;
+}
+.workspace-content > .class-page {
+  padding: 0;
+}
+.workspace-content > .class-page > a:first-child {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 0.8rem;
+}
+.workspace-content .class-page h1 {
+  font-size: 3rem;
+  margin: 1rem 0;
+}
+.dashboard-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+.dashboard-heading p {
+  margin: 0;
+}
+.dashboard-heading .eyebrow,
+.edition-label {
+  font-size: 0.7rem;
+}
+.edition-label {
+  color: var(--muted);
+}
+.dashboard-opening {
+  padding: 1rem 0 2rem;
+}
+.dashboard-opening > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 3rem;
+  align-items: center;
+}
+.workspace-content .dashboard-opening h1 {
+  font-family: 'Public Sans', sans-serif;
+  font-weight: 600;
+  font-size: 3rem;
+  letter-spacing: -0.055em;
+  max-width: 24ch;
+  margin: 0;
+}
+.dashboard-opening .intro {
+  grid-column: 1;
+  font-size: 1rem;
+  margin: 0.75rem 0 0;
+}
+.dashboard-primary {
+  grid-column: 2;
+  grid-row: 1/3;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  align-items: start;
+  gap: 0.35rem 1rem;
+  font-size: 0.8rem;
+}
+.dashboard-primary a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+.dashboard-primary .primary-link {
+  grid-column: 1 / -1;
+  width: max-content;
+  padding: 0.75rem 1.25rem;
+}
+.dashboard-opening > div > p:last-child:not(.intro) {
+  grid-column: 1;
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+}
+.edition-desk {
+  padding: 3rem;
+  background: oklch(91% 0.017 55);
+  border: 1px solid oklch(85% 0.018 55);
+  margin-bottom: 3rem;
+}
+.book-spread {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  box-shadow: 0 14px 25px -18px oklch(25% 0.025 40 / 0.5);
+}
+.book-cover-link {
+  display: block;
+  text-decoration: none;
+  min-width: 0;
+  transition: transform 220ms ease-out;
+}
+.book-cover-link:hover {
+  transform: translateY(-4px);
+}
+.book-cover {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 0;
+  min-height: 520px;
+  padding: 2rem;
+  overflow: hidden;
+  background: oklch(76% 0.13 40);
+  color: oklch(23% 0.035 35);
+}
+.book-masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid currentColor;
+}
+.book-masthead > span:first-child {
+  font-family: 'Literata', serif;
+  font-size: 1.3rem;
+}
+.book-masthead > span:last-child {
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.book-title {
+  font-family: 'Literata', serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 10cqi, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  margin: 2rem 0;
+  overflow-wrap: anywhere;
+  max-width: 17ch;
+  z-index: 1;
+}
+.book-year {
+  font-family: 'Public Sans', sans-serif;
+  font-weight: 600;
+  font-size: clamp(6rem, 40cqi, 16rem);
+  line-height: 0.9;
+  letter-spacing: -0.1em;
+  margin: auto 0 2rem -0.06em;
+}
+.book-colophon {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.65rem;
+  line-height: 1.5;
+  border-top: 1px solid currentColor;
+  padding-top: 1rem;
+  margin-top: auto;
+}
+.book-image {
+  display: block;
+  width: 100%;
+  flex: 1;
+  min-height: 180px;
+  max-height: 420px;
+  object-fit: cover;
+  margin: 0 0 1.5rem;
+}
+.book-cover.theme-ink {
+  background: oklch(27% 0.026 250);
+  color: oklch(96% 0.018 70);
+}
+.book-cover.theme-garden {
+  background: oklch(38% 0.075 155);
+  color: oklch(96% 0.03 90);
+}
+.book-opening-page {
+  background: var(--paper);
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--rule);
+  min-width: 0;
+}
+.book-opening-page .eyebrow {
+  margin: 0;
+}
+.book-opening-page h2 {
+  font-size: 2.6rem;
+  letter-spacing: -0.045em;
+  line-height: 1.2;
+  margin: 2rem 0 1.5rem;
+}
+.opening-message {
+  font-family: 'Literata', serif;
+  font-size: 1rem;
+  line-height: 1.85;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 7;
+  overflow: hidden;
+}
+.book-open-link {
+  margin-top: auto;
+  padding-top: 2rem;
+  min-height: 44px;
+  font-size: 0.85rem;
+}
+.spread-contents {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+}
+.spread-contents a {
+  display: flex;
+  gap: 1.25rem;
+  min-height: 44px;
+  align-items: center;
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.8rem;
+}
+.spread-contents a:hover {
+  color: var(--accent);
+}
+.spread-contents span {
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.contribution-progress {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 3rem;
+  padding: 0 0 3rem;
+  align-items: start;
+}
+.contribution-progress h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  max-width: 16ch;
+}
+.contribution-progress dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2rem;
+  margin: 0;
+}
+.contribution-progress dt {
+  font-size: 0.75rem;
+}
+.contribution-progress dd {
+  margin: 0.6rem 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.contribution-progress dd span {
+  font-size: 1.3rem;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.contribution-progress progress {
+  width: 100%;
+  height: 3px;
+  accent-color: var(--accent);
+}
+.dashboard-tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  border-top: 1px solid var(--rule);
+}
+.dashboard-tools > a {
+  padding: 2rem 0;
+  text-decoration: none;
+}
+.dashboard-tools h2 {
+  margin: 0.5rem 0;
+  font-size: 1.5rem;
+}
+.dashboard-tools p {
+  font-size: 0.85rem;
+  margin: 0;
+  color: var(--muted);
+}
+.dashboard-tools a:hover h2 {
+  text-decoration: underline;
+}
+.account-form input,
+.account-form select,
+.account-form textarea {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0.8rem 0.9rem;
+  color: var(--ink);
+  font: inherit;
+}
+.account-form label {
+  font-size: 0.875rem;
+  gap: 0.5rem;
+}
+.account-form textarea {
+  width: 100%;
+  min-width: 0;
+  line-height: 1.65;
+  resize: vertical;
+}
+.account-form textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.account-form input:focus-visible,
+.account-form select:focus-visible {
+  outline-width: 2px;
+  outline-offset: 2px;
+}
+.profile-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 0.65fr) minmax(0, 1.35fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+.profile-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+.profile-fields > .intro,
+.profile-fields > label:has([name='bio']),
+.profile-fields > label:has([name='quote']),
+.profile-fields > label:has([name='contact']),
+.profile-fields > fieldset,
+.profile-fields > .save-bar {
+  grid-column: 1 / -1;
+}
+.profile-fields > .intro {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.profile-fields > label {
+  align-content: start;
+}
+.field-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+}
+.field-label .field-hint {
+  font-size: 0.75rem;
+  color: oklch(48% 0.025 155);
+}
+.profile-photo-column {
+  position: sticky;
+  top: 1.5rem;
+}
+.portrait {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+  display: block;
+}
+.empty-portrait {
+  aspect-ratio: 4/5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: oklch(91% 0.027 50);
+  color: var(--accent);
+  border: 1px solid var(--rule);
+}
+.empty-portrait > span {
+  font:
+    6rem/1 'Literata',
+    serif;
+}
+.empty-portrait p {
+  font-size: 0.8rem;
+}
+.photo-upload {
+  padding: 1.25rem 0;
+  margin: 1rem 0 0;
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  border: 0;
+  border-top: 1px solid var(--rule);
+}
+.photo-upload legend {
+  padding: 0 0.75rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.photo-upload p {
+  margin: 0;
+  font-size: 0.8rem;
+}
+.file-choice input {
+  font-size: 0.75rem;
+  padding: 0.6rem;
+}
+.file-choice input::file-selector-button {
+  border: 0;
+  border-radius: 2px;
+  background: var(--accent);
+  color: var(--paper);
+  font: inherit;
+  padding: 0.6rem;
+  margin-right: 0.6rem;
+  cursor: pointer;
+}
+.privacy-fields {
+  padding: 1.5rem;
+  border: 1px solid var(--rule);
+  background: oklch(94% 0.016 65);
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.privacy-fields legend {
+  padding: 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.privacy-fields p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+.save-bar {
+  padding: 1.5rem 0 0;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+.save-bar button {
+  font-size: 0.875rem;
+}
+.save-bar > [role] {
+  flex: 1 1 100%;
+}
+[role='alert'] {
+  overflow-wrap: anywhere;
+}
+.profile-view {
+  max-width: 48rem;
+  padding: 2rem;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+}
+.profile-view .portrait {
+  max-width: 22rem;
+}
+.preserve-lines {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.yearbook-editor {
+  max-width: 65rem;
+}
+.edition-settings {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.65fr);
+  gap: 2.5rem;
+  padding: 2rem;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  align-items: start;
+}
+.editor-outline {
+  display: block;
+  margin-top: 1rem;
+}
+.editor-outline .eyebrow {
+  margin: 0 0 0.75rem;
+}
+.editor-outline ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.editor-outline button {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  text-align: left;
+  align-items: center;
+  padding: 0.6rem 0;
+  min-height: 44px;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.8rem;
+}
+.editor-outline button:hover {
+  background: transparent;
+  color: var(--accent);
+  text-decoration: underline;
+}
+.editor-outline button span {
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+.class-voices {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 4rem;
+  align-items: center;
+  margin: 0 0 4rem;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid var(--rule);
+}
+.class-voice-intro .eyebrow {
+  margin: 0 0 1.5rem;
+}
+.class-voice-intro blockquote {
+  font-size: 2rem;
+  line-height: 1.45;
+  margin: 0 0 1.5rem;
+}
+.class-voice-intro > a,
+.class-voices-link {
+  font-size: 0.8rem;
+}
+.class-voice-intro h2 {
+  margin: 0;
+}
+.class-contact-sheet {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.class-contact-sheet > a {
+  min-width: 0;
+  text-decoration: none;
+  font-size: 0.75rem;
+}
+.class-contact-sheet > a:hover > span:last-child {
+  text-decoration: underline;
+}
+.class-contact-sheet > a > span:last-child {
+  display: block;
+  padding-top: 0.75rem;
+}
+.contact-initial {
+  aspect-ratio: 4/5;
+  display: grid;
+  place-items: center;
+  font:
+    4rem/1 'Literata',
+    serif;
+  background: oklch(91% 0.027 50);
+  color: var(--accent);
+}
+.class-voices-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 1rem;
+}
+.edition-settings-fields {
+  display: grid;
+  gap: 1.5rem;
+}
+.edition-swatch {
+  min-width: 0;
+}
+.edition-swatch .book-cover {
+  min-height: 360px;
+}
+.yearbook-editor > h2 {
+  margin: 1rem 0 0;
+  font-size: 1.8rem;
+}
+.section-disclosure {
+  scroll-margin-top: 2rem;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  border-radius: 3px;
+}
+.section-disclosure[open] {
+  border-color: oklch(63% 0.035 155);
+}
+.section-disclosure > summary {
+  padding: 1.1rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.section-disclosure > summary::marker {
+  color: var(--accent);
+}
+.section-number {
+  display: inline-block;
+  min-width: 2rem;
+  margin-right: 0.5rem;
+  font-size: 0.75rem;
+  color: oklch(50% 0.025 155);
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+.section-disclosure > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.section-editor {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  padding: 1.5rem;
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+}
+.section-editor > legend {
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  color: oklch(45% 0.025 155);
+  max-width: 100%;
+}
+.section-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+.section-controls button {
+  font-size: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  min-height: 44px;
+}
+.editor-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 1rem;
+}
+.editor-photos figure {
+  margin: 0;
+  max-width: 300px;
+}
+.editor-photos img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+figcaption {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  margin: 0.75rem 0;
+  overflow-wrap: anywhere;
+}
+.add-section {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+  flex-wrap: wrap;
+  padding: 1rem 0;
+}
+.add-section button {
+  font-size: 0.875rem;
+}
+
+.yearbook-reader {
+  padding: 0 0 3rem;
+}
+.reader-toolbar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+.reader-toolbar a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.reader-opening {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  align-items: end;
+  gap: 3rem;
+}
+.reader-opening .book-cover {
+  min-height: 680px;
+  padding: 3rem;
+}
+.reader-opening .book-title {
+  font-size: clamp(3rem, 10cqi, 6rem);
+}
+.reader-opening .book-year {
+  font-size: clamp(8rem, 37cqi, 23rem);
+}
+.reader-opening .book-image {
+  max-height: 560px;
+}
+.reader-draft-note {
+  font-size: 0.8rem;
+  line-height: 1.7;
+  border-top: 1px solid var(--rule);
+  padding-top: 1rem;
+}
+.edition-contents {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 3rem;
+  padding: 3rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.edition-contents .eyebrow {
+  margin: 0;
+}
+.edition-contents ol {
+  columns: 2;
+  margin: 0;
+  padding-left: 1.5rem;
+}
+.edition-contents li {
+  break-inside: avoid;
+  padding-left: 0.5rem;
+}
+.edition-contents a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  font-size: 0.85rem;
+}
+.reader-section {
+  padding: 4rem 0;
+  border-bottom: 1px solid var(--rule);
+  scroll-margin-top: 2rem;
+}
+.reader-section-heading {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+.section-folio {
+  font-family: 'Public Sans', sans-serif;
+  font-weight: 600;
+  font-size: 6rem;
+  letter-spacing: -0.08em;
+  line-height: 1;
+  margin: 0;
+  color: var(--accent);
+}
+.reader-section-heading .eyebrow {
+  margin: 0 0 0.5rem;
+}
+.reader-section-heading h2 {
+  margin: 0;
+  font-size: 3rem;
+  letter-spacing: -0.045em;
+}
+.section-prose {
+  font-family: 'Literata', serif;
+  font-size: 1.2rem;
+  line-height: 1.9;
+  max-width: 55ch;
+  margin: 0 auto 3rem;
+}
+.reader-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+}
+.reader-gallery.gallery-1 {
+  grid-template-columns: 1fr;
+}
+.reader-gallery figure {
+  margin: 0;
+}
+.reader-gallery img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.member-pages {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4rem;
+}
+.member-page {
+  min-width: 0;
+}
+.member-page:nth-child(even) {
+  padding-top: 5rem;
+}
+.member-page .portrait,
+.member-page .empty-portrait {
+  width: 100%;
+  max-width: none;
+}
+.member-page h3 {
+  font-family: 'Literata', serif;
+  font-weight: 400;
+  font-size: 2rem;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+  margin: 1.5rem 0 1rem;
+}
+.member-page h3 a {
+  text-decoration: none;
+}
+.member-page h3 a:hover {
+  text-decoration: underline;
+}
+.member-page > div > p {
+  font-size: 0.9rem;
+}
+blockquote {
+  font:
+    italic 1.5rem/1.65 'Literata',
+    serif;
+  margin: 1.5rem 0;
+  overflow-wrap: anywhere;
+}
+.quote-pages {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+}
+.quote-pages .member-page {
+  border-top: 1px solid var(--rule);
+  padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+}
+.quote-pages .member-page h3 {
+  font-family: 'Public Sans', sans-serif;
+  font-size: 0.85rem;
+  margin: 0;
+}
+.quote-pages blockquote {
+  font-size: 2rem;
+}
+.reader-empty {
+  padding: 3rem 0;
+}
+.photo-fallback {
+  padding: 2rem;
+  border: 1px solid var(--rule);
+}
+.member-list > li {
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+}
+.member-list h2 {
+  margin: 0 0 0.5rem;
+}
+.member-list h2 a {
+  text-decoration-thickness: 1px;
+}
+.member-list p {
+  font-size: 0.8rem;
+}
+.member-list .account-form {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  max-width: none;
+}
+.member-list .account-form label {
+  flex: 1 1 150px;
+}
+.member-list .account-form button {
+  font-size: 0.8rem;
+}
+.member-list .account-form [role] {
+  flex: 1 1 100%;
+}
+
+@media (max-width: 1000px) {
+  .site-workspace {
+    padding: 0 2rem;
+  }
+  .workspace-school {
+    display: block;
+    flex-basis: 100%;
+  }
+  .workspace-context {
+    gap: 0.25rem 1rem;
+  }
+  .edition-desk {
+    padding: 1.5rem;
+  }
+  .book-cover {
+    padding: 1.5rem;
+    min-height: 480px;
+  }
+  .book-opening-page {
+    padding: 2rem;
+  }
+  .book-opening-page h2 {
+    font-size: 2rem;
+  }
+  .reader-opening {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .reader-draft-note {
+    max-width: 65ch;
+  }
+  .reader-opening .book-cover {
+    min-height: 600px;
+  }
+  .profile-fields {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 720px) {
+  .class-voices {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+  .class-voice-intro blockquote {
+    font-size: 1.5rem;
+  }
+  .class-contact-sheet {
+    gap: 0.75rem;
+  }
+  .contact-initial {
+    font-size: 2.5rem;
+  }
+  .site-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding-top: 0.75rem;
+  }
+  .site-header .language-choice {
+    order: 0;
+    width: auto;
+  }
+  .site-header .language-choice select {
+    width: auto;
+    max-width: 140px;
+  }
+  .site-header nav {
+    grid-column: 1/-1;
+    gap: 0.5rem 1.25rem;
+  }
+  .site-workspace {
+    padding: 0 1.25rem;
+  }
+  .workspace-header {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  .workspace-context {
+    gap: 0.25rem 0.75rem;
+  }
+  .workspace-context .eyebrow {
+    flex-basis: 100%;
+  }
+  .workspace-privacy {
+    margin: 0.5rem 0;
+  }
+  .workspace-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 1rem;
+  }
+  .workspace-nav a {
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+  .dashboard-opening > div {
+    display: block;
+  }
+  .workspace-content .dashboard-opening h1 {
+    font-size: 2.5rem;
+  }
+  .dashboard-primary {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: 1.5rem 0 0;
+  }
+  .dashboard-heading {
+    flex-wrap: wrap;
+  }
+  .edition-desk {
+    padding: 0.75rem;
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+  }
+  .book-spread {
+    grid-template-columns: 1fr;
+  }
+  .book-cover {
+    min-height: 420px;
+    padding: 1.5rem;
+  }
+  .book-opening-page {
+    padding: 2rem 1.5rem;
+    border-left: 0;
+    border-top: 1px solid var(--rule);
+  }
+  .book-opening-page h2 {
+    font-size: 2rem;
+    margin: 1.25rem 0;
+  }
+  .book-opening-page .opening-message {
+    -webkit-line-clamp: 5;
+  }
+  .book-masthead {
+    gap: 0.5rem;
+  }
+  .book-masthead > span:last-child {
+    font-size: 0.55rem;
+    letter-spacing: 0.03em;
+  }
+  .contribution-progress,
+  .edition-contents {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .contribution-progress h2 {
+    max-width: none;
+  }
+  .contribution-progress dl {
+    gap: 1rem;
+  }
+  .contribution-progress dt {
+    min-height: 3em;
+  }
+  .dashboard-tools {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .dashboard-tools > a + a {
+    border-top: 1px solid var(--rule);
+  }
+  .profile-editor,
+  .profile-fields,
+  .edition-settings {
+    grid-template-columns: 1fr;
+  }
+  .profile-photo-column {
+    position: static;
+    max-width: 360px;
+  }
+  .edition-settings {
+    padding: 1.25rem;
+  }
+  .edition-swatch .book-cover {
+    min-height: 380px;
+  }
+  .section-disclosure > summary {
+    padding: 1rem 0.75rem;
+    font-size: 0.9rem;
+  }
+  .section-number {
+    min-width: 1.25rem;
+    margin-right: 0.25rem;
+  }
+  .section-editor {
+    padding: 1rem;
+  }
+  .section-controls {
+    justify-content: flex-start;
+  }
+  .section-controls button {
+    padding: 0.6rem;
+  }
+  .reader-opening .book-cover {
+    min-height: 480px;
+    padding: 1.5rem;
+  }
+  .reader-opening .book-title {
+    font-size: 2.75rem;
+  }
+  .reader-opening .book-year {
+    font-size: 39cqi;
+  }
+  .edition-contents ol {
+    columns: 1;
+  }
+  .reader-section {
+    padding: 3rem 0;
+  }
+  .reader-section-heading {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .section-folio {
+    font-size: 3rem;
+  }
+  .reader-section-heading h2 {
+    font-size: 2rem;
+  }
+  .section-prose {
+    font-size: 1rem;
+  }
+  .member-pages,
+  .quote-pages,
+  .reader-gallery {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .member-page:nth-child(even) {
+    padding-top: 0;
+  }
+  .quote-pages blockquote {
+    font-size: 1.5rem;
+  }
+  .profile-view {
+    padding: 1.25rem;
+  }
+  .privacy-fields,
+  .member-list > li {
+    padding: 1rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .book-cover-link {
+    transition: none;
+  }
+}

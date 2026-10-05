@@ -10,6 +10,7 @@ import {
 } from './class-api';
 import { LoadState, Pagination, ResourceForm, TextField } from './ClassCommon';
 import type { Locale } from './identity-copy';
+import { ClassDashboard } from './ClassDashboard';
 
 export function ClassesHome({ locale }: { locale: Locale }) {
   const t = classCopy[locale];
@@ -44,7 +45,6 @@ export function ClassesHome({ locale }: { locale: Locale }) {
                     </h2>
                     {klass.motto && <p>{klass.motto}</p>}
                   </div>
-                  <span aria-hidden="true">↗</span>
                 </li>
               ))}
             </ul>
@@ -232,7 +232,7 @@ export function ClassHome({ locale }: { locale: Locale }) {
   const t = classCopy[locale];
   const result = useResource<ClassDetail>('/classes/' + id);
   useEffect(() => {
-    if (result.data) document.title = result.data.name + ' — Anamnou';
+    if (result.data) document.title = result.data.name + ' | Anamnou';
   }, [result.data]);
   return (
     <section className="class-page">
@@ -246,24 +246,7 @@ export function ClassHome({ locale }: { locale: Locale }) {
           />
         </>
       ) : (
-        <>
-          <p className="eyebrow">
-            {result.data.school.name} · {result.data.graduationYear}
-          </p>
-          <h1>{result.data.name}</h1>
-          {result.data.motto && <p className="intro">{result.data.motto}</p>}
-          <p>{t.private}</p>
-          <nav className="class-actions" aria-label={t.myClasses}>
-            {result.data.permissions.directory && (
-              <Link to={'/classes/' + id + '/members'}>
-                {t.members} ({result.data.memberCount})
-              </Link>
-            )}
-            {result.data.permissions.manage && (
-              <Link to={'/classes/' + id + '/manage'}>{t.manage}</Link>
-            )}
-          </nav>
-        </>
+        <ClassDashboard klass={result.data} locale={locale} />
       )}
       <p>
         <Link to="/classes">{t.back}</Link>

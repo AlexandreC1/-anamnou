@@ -4,12 +4,16 @@
 
 A digital yearbook platform for graduating classes, starting in Haiti.
 
-**Current scope: Phase 2 schools and classes.** The React/NestJS application supports
+**Current scope: Phase 3 profiles and yearbook drafts.** The React/NestJS application supports
 verified accounts, school/class creation, memberships, role management, invitation
 links/codes/QR and a private member directory in Haitian Creole, French, English
 and Spanish. PostgreSQL, private object storage and email delivery run locally.
-Photos, yearbook editing, voting and publishing belong to later phases.
-See [identity setup](docs/development/identity.md) and [class setup](docs/development/classes.md).
+Class admins have a dashboard with contribution counts, member/invitation management,
+and yearbook editing. Members can create private or class-visible profiles, upload
+graduation photos, and read a responsive draft. Voting and immutable publication
+remain later phases.
+See [identity setup](docs/development/identity.md), [class setup](docs/development/classes.md),
+and [profiles and yearbooks](docs/development/yearbooks.md).
 
 **Waiting for a verification email?** In the local preview, open
 [the test inbox](http://localhost:8025), search for your email address and open the

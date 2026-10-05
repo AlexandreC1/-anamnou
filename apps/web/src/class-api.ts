@@ -19,7 +19,7 @@ export type ClassSummary = {
   school: { name: string };
 };
 export type ClassDetail = ClassSummary & {
-  permissions: { manage: boolean; directory: boolean };
+  permissions: { manage: boolean; directory: boolean; contribute: boolean };
   memberCount: number | null;
 };
 export type Role = 'MEMBER' | 'CLASS_ADMIN' | 'STAFF' | 'GUEST';

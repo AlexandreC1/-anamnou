@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test('reader navigates real routes, reloads, and checks the real API', async ({
   page,

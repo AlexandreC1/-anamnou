@@ -1,6 +1,9 @@
 # Foundation architecture
 
-## Current implementation
+This is the Phase 0 architectural record. See [the current module overview](phase-3.md)
+for the implemented identity, class, profile, media and draft features.
+
+## Phase 0 implementation
 
 Browser → Vite development/preview server → /api proxy → NestJS REST API.
 NestJS uses Prisma with the PostgreSQL driver adapter and an S3-compatible storage

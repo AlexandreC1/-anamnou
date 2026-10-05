@@ -1,6 +1,9 @@
 node_modules
 .tools
 dist
+dist-native
+apps/web/android
+apps/web/ios
 dist-test
 coverage
 playwright-report

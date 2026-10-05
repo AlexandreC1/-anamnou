@@ -37,6 +37,7 @@ export function Pagination({
   locale: Locale;
 }) {
   const t = classCopy[locale];
+  if (value.page === 1 && !value.hasMore) return null;
   return (
     <nav className="class-actions" aria-label={t.page}>
       <button

@@ -9,6 +9,9 @@ export default tseslint.config(
     ignores: [
       '**/node_modules/**',
       '**/dist/**',
+      '**/dist-native/**',
+      'apps/web/android/**',
+      'apps/web/ios/**',
       '**/dist-test/**',
       '.tools/**',
       '**/generated/**',

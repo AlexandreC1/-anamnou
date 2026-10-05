@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 test('opening page remains readable across viewport sizes', async ({
   page,
 }, testInfo) => {

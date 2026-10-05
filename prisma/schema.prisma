@@ -49,6 +49,7 @@ model User {
   schools SchoolAdmin[]
   memberships ClassMembership[]
   invitations Invitation[]
+  mediaAssets MediaAsset[]
 }
 
 model Session {
@@ -162,6 +163,8 @@ model Class {
   memberships ClassMembership[]
   invitations Invitation[]
   auditLogs AuditLog[]
+  mediaAssets MediaAsset[]
+  yearbook Yearbook?
   @@unique([schoolId, slug])
 }
 
@@ -176,6 +179,7 @@ model ClassMembership {
   joinedAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
   acceptances InvitationAcceptance[]
+  profile Profile?
   @@unique([classId, userId])
   @@unique([id, classId])
   @@index([userId, status])
@@ -210,4 +214,120 @@ model InvitationAcceptance {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   @@id([invitationId, membershipId])
   @@index([membershipId, classId])
+}
+
+enum ProfileVisibility {
+  PRIVATE
+  CLASS
+}
+
+enum MediaPurpose {
+  PROFILE
+  YEARBOOK
+}
+
+enum MediaStatus {
+  PENDING
+  UPLOADED
+  READY
+  DELETED
+}
+
+enum SectionType {
+  COVER
+  MESSAGE
+  CLASS_PHOTO
+  MEMBERS
+  STAFF
+  QUOTES
+  GALLERY
+  ACKNOWLEDGEMENTS
+  GRADUATION
+}
+
+model Profile {
+  id String @id @default(uuid()) @db.Uuid
+  classId String @db.Uuid
+  membershipId String @unique @db.Uuid
+  membership ClassMembership @relation(fields: [membershipId, classId], references: [id, classId], onDelete: Restrict)
+  displayName String @db.VarChar(80)
+  nickname String? @db.VarChar(80)
+  bio String? @db.VarChar(1000)
+  quote String? @db.VarChar(280)
+  activities String? @db.VarChar(500)
+  aspiration String? @db.VarChar(280)
+  contact String? @db.VarChar(300)
+  visibility ProfileVisibility @default(PRIVATE)
+  contactVisibility ProfileVisibility @default(PRIVATE)
+  photoAssetId String? @db.Uuid
+  photo MediaAsset? @relation(fields: [photoAssetId, classId], references: [id, classId], onDelete: Restrict)
+  version Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  @@index([classId, visibility])
+  @@unique([membershipId, classId])
+}
+
+model MediaAsset {
+  id String @id @default(uuid()) @db.Uuid
+  classId String @db.Uuid
+  ownerUserId String @db.Uuid
+  class Class @relation(fields: [classId], references: [id], onDelete: Restrict)
+  owner User @relation(fields: [ownerUserId], references: [id], onDelete: Restrict)
+  purpose MediaPurpose
+  status MediaStatus @default(PENDING)
+  storageKey String @unique @db.VarChar(200)
+  declaredType String @db.VarChar(40)
+  declaredSize Int
+  size Int?
+  width Int?
+  height Int?
+  alt String @db.VarChar(240)
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  profiles Profile[]
+  sectionMedia YearbookSectionMedia[]
+  @@unique([id, classId])
+  @@index([classId, ownerUserId, status])
+  @@index([status, expiresAt])
+}
+
+model Yearbook {
+  id String @id @default(uuid()) @db.Uuid
+  classId String @unique @db.Uuid
+  class Class @relation(fields: [classId], references: [id], onDelete: Restrict)
+  title String @db.VarChar(120)
+  theme String @default("PAPER") @db.VarChar(16)
+  version Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  sections YearbookSection[]
+  @@unique([id, classId])
+}
+
+model YearbookSection {
+  id String @id @default(uuid()) @db.Uuid
+  yearbookId String @db.Uuid
+  classId String @db.Uuid
+  yearbook Yearbook @relation(fields: [yearbookId, classId], references: [id, classId], onDelete: Restrict)
+  type SectionType
+  title String @db.VarChar(120)
+  body String @default("") @db.VarChar(4000)
+  position Int
+  media YearbookSectionMedia[]
+  @@unique([yearbookId, position])
+  @@unique([id, classId])
+}
+
+model YearbookSectionMedia {
+  sectionId String @db.Uuid
+  assetId String @db.Uuid
+  classId String @db.Uuid
+  position Int
+  section YearbookSection @relation(fields: [sectionId, classId], references: [id, classId], onDelete: Cascade)
+  asset MediaAsset @relation(fields: [assetId, classId], references: [id, classId], onDelete: Restrict)
+  @@id([sectionId, assetId])
+  @@unique([sectionId, position])
+  @@index([assetId, classId])
 }

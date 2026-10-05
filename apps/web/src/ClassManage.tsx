@@ -37,7 +37,15 @@ export function MemberDirectory({ locale }: { locale: Locale }) {
           <ul className="member-list">
             {result.data.items.map((member) => (
               <li key={member.id}>
-                <h2>{member.displayName}</h2>
+                <h2>
+                  {member.status === 'ACTIVE' && member.role !== 'GUEST' ? (
+                    <Link to={`/classes/${id}/members/${member.id}/profile`}>
+                      {member.displayName}
+                    </Link>
+                  ) : (
+                    member.displayName
+                  )}
+                </h2>
                 <p>
                   {roleLabel(member.role, locale)} ·{' '}
                   {member.status === 'ACTIVE' ? t.active : t.removed}

@@ -1,5 +1,5 @@
 import { emailLink } from './mail-helper';
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { randomUUID } from 'node:crypto';
 // Browser traces record form secrets and email links. Keep identity screenshots only.
 test.use({ trace: 'off' });

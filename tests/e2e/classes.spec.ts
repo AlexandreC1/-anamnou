@@ -1,9 +1,5 @@
-import {
-  test,
-  expect,
-  type Page,
-  type APIRequestContext,
-} from '@playwright/test';
+import { type Page, type APIRequestContext } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { randomUUID } from 'node:crypto';
 import { emailLink } from './mail-helper';
 
@@ -62,7 +58,7 @@ test('president creates school/class, shares invitation QR, student joins and ad
     page.getByRole('heading', { name: 'Class ' + suffix }),
   ).toBeVisible();
   const classUrl = page.url();
-  await page.getByRole('link', { name: 'Manage', exact: true }).click();
+  await page.getByRole('link', { name: /Members & invitations/ }).click();
   await page.getByLabel('Maximum uses').fill('1');
   await page.getByRole('button', { name: 'Create invitation' }).click();
   await expect(
@@ -86,9 +82,12 @@ test('president creates school/class, shares invitation QR, student joins and ad
       student.getByRole('heading', { name: 'Class ' + suffix }),
     ).toBeVisible();
     await expect(
-      student.getByRole('link', { name: 'Manage', exact: true }),
+      student.getByRole('link', { name: /Members & invitations/ }),
     ).toHaveCount(0);
-    await student.getByRole('link', { name: /Members/ }).click();
+    await student
+      .getByRole('navigation', { name: 'Class navigation' })
+      .getByRole('link', { name: 'Class members', exact: true })
+      .click();
     await expect(
       student.getByRole('heading', { name: 'President ' + suffix }),
     ).toBeVisible();

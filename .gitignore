@@ -4,6 +4,7 @@ node_modules/
 !.env.example
 .tools/
 dist/
+dist-native/
 dist-test/
 coverage/
 playwright-report/

@@ -28,8 +28,14 @@ export class ClassAccess {
     write: boolean,
     action: (
       tx: Transaction,
-      access: { schoolId: string; admin: boolean; guest: boolean },
+      access: {
+        schoolId: string;
+        admin: boolean;
+        guest: boolean;
+        memberId: string | null;
+      },
     ) => Promise<T>,
+    requireAdmin = write,
   ) {
     return this.database.$transaction(async (tx) => {
       if (write)
@@ -45,11 +51,12 @@ export class ClassAccess {
       if (!schoolAdmin && member?.status !== 'ACTIVE')
         throw new NotFoundException();
       const admin = schoolAdmin || member?.role === 'CLASS_ADMIN';
-      if (write && !admin) throw new ForbiddenException();
+      if (requireAdmin && !admin) throw new ForbiddenException();
       return action(tx, {
         schoolId: klass.schoolId,
         admin,
         guest: !admin && member?.role === 'GUEST',
+        memberId: member?.status === 'ACTIVE' ? member.id : null,
       });
     });
   }

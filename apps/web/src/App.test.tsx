@@ -6,6 +6,66 @@ import { App } from './App';
 
 describe('foundation shell', () => {
   beforeEach(() => window.localStorage.clear());
+  it('lets visitors preview the book and discover appearance settings', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>,
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Coral' }),
+    ).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole('link', { name: 'Customize your theme' }),
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Your appearance' }),
+    ).toBeVisible();
+    const lilac = screen.getByRole('button', { name: /Lilac/ });
+    await user.click(lilac);
+    expect(lilac).toHaveAttribute('aria-pressed', 'true');
+    expect(window.localStorage.getItem('anamnou-theme')).toBe('lilac');
+    expect(document.documentElement.dataset.anamnouTheme).toBe('lilac');
+    await user.click(
+      screen.getAllByRole('link').find((link) => link.textContent === 'Home')!,
+    );
+    expect(document.querySelector('.memory-stage')).toHaveAttribute(
+      'data-theme',
+      'lilac',
+    );
+    await user.click(
+      screen.getByRole('button', { name: 'Take a peek inside' }),
+    );
+    const close = screen.getByRole('button', { name: 'Back to the cover' });
+    expect(close).toHaveAttribute('aria-expanded', 'true');
+    await user.click(close);
+    expect(
+      screen.getByRole('button', { name: 'Take a peek inside' }),
+    ).toHaveAttribute('aria-expanded', 'false');
+    for (const link of screen.getAllByRole('link', {
+      name: 'Start your class story',
+    })) {
+      expect(link).toHaveAttribute('href', '/classes/new');
+    }
+    expect(screen.getByRole('link', { name: 'Join a class' })).toHaveAttribute(
+      'href',
+      '/join',
+    );
+  });
+  it('restores the selected appearance from device settings', () => {
+    window.localStorage.setItem('anamnou-theme', 'sage');
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>,
+    );
+    expect(document.documentElement.dataset.anamnouTheme).toBe('sage');
+    expect(document.querySelector('.memory-stage')).toHaveAttribute(
+      'data-theme',
+      'sage',
+    );
+  });
   it('offers working navigation without pretending class features exist', async () => {
     render(
       <MemoryRouter>

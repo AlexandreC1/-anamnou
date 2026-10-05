@@ -13,6 +13,16 @@ import {
 } from './Classes';
 import { ClassManage, MemberDirectory } from './ClassManage';
 import { classCopy } from './class-copy';
+import { MemberProfile } from './MemberProfile';
+import { YearbookEditor } from './YearbookEditor';
+import { YearbookReader } from './YearbookReader';
+import { ClassWorkspace } from './ClassWorkspace';
+import './yearbook.css';
+import { LandingPage } from './LandingPage';
+import './prism.css';
+import { apiFetch } from './api-transport';
+import { NativeNavigation } from './NativeNavigation';
+import { AppearanceSettings, type AnamnouTheme } from './AppearanceSettings';
 
 type Locale = 'ht' | 'fr' | 'en' | 'es';
 const localeLabels: Record<Locale, string> = {
@@ -107,7 +117,7 @@ function RouteFocus({ locale }: { locale: Locale }) {
   const previous = useRef(pathname);
   useEffect(() => {
     document.title =
-      (document.querySelector('h1')?.textContent ?? 'Anamnou') + ' — Anamnou';
+      (document.querySelector('h1')?.textContent ?? 'Anamnou') + ' | Anamnou';
     if (previous.current !== pathname) {
       document.getElementById('main')?.focus();
       previous.current = pathname;
@@ -129,6 +139,20 @@ function useLocale(): [Locale, (locale: Locale) => void] {
     document.documentElement.lang = locale;
   }, [locale]);
   return [locale, setLocale];
+}
+function useAppearance(): [AnamnouTheme, (theme: AnamnouTheme) => void] {
+  const [theme, setTheme] = useState<AnamnouTheme>(() => {
+    const saved = window.localStorage.getItem('anamnou-theme');
+    return saved === 'lilac' || saved === 'sage' ? saved : 'coral';
+  });
+  useEffect(() => {
+    document.documentElement.dataset.anamnouTheme = theme;
+  }, [theme]);
+  function updateTheme(next: AnamnouTheme) {
+    setTheme(next);
+    window.localStorage.setItem('anamnou-theme', next);
+  }
+  return [theme, updateTheme];
 }
 function LanguageChoice({
   locale,
@@ -156,9 +180,12 @@ function LanguageChoice({
 }
 export function App() {
   const [locale, setLocale] = useLocale();
+  const [theme, setTheme] = useAppearance();
   const selected = copy[locale];
+  const { pathname } = useLocation();
+  const inWorkspace = /^\/classes\/(?!new(?:\/|$))[^/]+/.test(pathname);
   return (
-    <div className="site">
+    <div className={'site' + (inWorkspace ? ' site-workspace' : '')}>
       <a className="skip-link" href="#main">
         {selected.skip}
       </a>
@@ -166,7 +193,7 @@ export function App() {
         <Link
           className="wordmark"
           to="/"
-          aria-label={`Anamnou — ${selected.home}`}
+          aria-label={`Anamnou: ${selected.home}`}
         >
           Anamnou<span aria-hidden="true">.</span>
         </Link>
@@ -177,12 +204,45 @@ export function App() {
           <NavLink to="/about">{selected.idea}</NavLink>
           <NavLink to="/classes">{classCopy[locale].myClasses}</NavLink>
           <NavLink to="/profile">{identityCopy[locale].account}</NavLink>
+          <NavLink to="/settings/appearance">
+            {locale === 'fr'
+              ? 'Apparence'
+              : locale === 'ht'
+                ? 'Aparans'
+                : locale === 'es'
+                  ? 'Apariencia'
+                  : 'Appearance'}
+          </NavLink>
         </nav>
         <LanguageChoice locale={locale} onChange={setLocale} />
       </header>
       <RouteFocus locale={locale} />
+      <NativeNavigation />
       <main id="main" tabIndex={-1}>
         <Routes>
+          <Route
+            path="/classes/:id"
+            element={<ClassWorkspace locale={locale} />}
+          >
+            <Route index element={<ClassHome locale={locale} />} />
+            <Route
+              path="members/:memberId/profile"
+              element={<MemberProfile locale={locale} />}
+            />
+            <Route
+              path="yearbook"
+              element={<YearbookReader locale={locale} />}
+            />
+            <Route
+              path="yearbook/edit"
+              element={<YearbookEditor locale={locale} />}
+            />
+            <Route path="manage" element={<ClassManage locale={locale} />} />
+            <Route
+              path="members"
+              element={<MemberDirectory locale={locale} />}
+            />
+          </Route>
           <Route path="/classes" element={<ClassesHome locale={locale} />} />
           <Route path="/schools/new" element={<SchoolForm locale={locale} />} />
           <Route
@@ -193,19 +253,20 @@ export function App() {
             path="/classes/new"
             element={<CreateClass locale={locale} />}
           />
-          <Route path="/classes/:id" element={<ClassHome locale={locale} />} />
-          <Route
-            path="/classes/:id/manage"
-            element={<ClassManage locale={locale} />}
-          />
-          <Route
-            path="/classes/:id/members"
-            element={<MemberDirectory locale={locale} />}
-          />
           <Route path="/join" element={<JoinClass locale={locale} />} />
           <Route
             path="/"
-            element={<Home selected={selected} locale={locale} />}
+            element={<Home selected={selected} locale={locale} theme={theme} />}
+          />
+          <Route
+            path="/settings/appearance"
+            element={
+              <AppearanceSettings
+                locale={locale}
+                theme={theme}
+                onChange={setTheme}
+              />
+            }
           />
           <Route path="/about" element={<About locale={locale} />} />
           <Route path="/connection" element={<Connection locale={locale} />} />
@@ -236,35 +297,16 @@ export function App() {
     </div>
   );
 }
-function Home({ selected, locale }: { selected: Copy; locale: Locale }) {
-  const t = publicCopy[locale];
-  return (
-    <section className="opening" aria-labelledby="opening-title">
-      <div className="opening-copy">
-        <p className="eyebrow">{selected.eyebrow}</p>
-        <h1 id="opening-title">
-          {selected.titleA} <br />
-          <em>{selected.titleB}</em>
-        </h1>
-        <p className="intro">{selected.intro}</p>
-        <Link className="text-link" to="/about">
-          {selected.discover} <span aria-hidden="true">↗</span>
-        </Link>
-      </div>
-      <div className="publication" aria-hidden="true">
-        <div className="publication-top">
-          <span>Anamnou</span>
-          <span>{t.archive}</span>
-        </div>
-        <p className="publication-title">{t.cover}</p>
-        <div className="publication-bottom">
-          <span>{t.coverNote}</span>
-          <span>01</span>
-        </div>
-      </div>
-      <p className="edition-note">{selected.note}</p>
-    </section>
-  );
+function Home({
+  selected,
+  locale,
+  theme,
+}: {
+  selected: Copy;
+  locale: Locale;
+  theme: AnamnouTheme;
+}) {
+  return <LandingPage locale={locale} selected={selected} theme={theme} />;
 }
 function About({ locale }: { locale: Locale }) {
   const t = publicCopy[locale];
@@ -295,7 +337,7 @@ export function Connection({ locale = 'en' }: { locale?: Locale }) {
     controller.current = current;
     setState('loading');
     try {
-      const response = await fetch('/api/ready', {
+      const response = await apiFetch('/ready', {
         signal: AbortSignal.any([current.signal, AbortSignal.timeout(8000)]),
         cache: 'no-store',
       });

@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import {
   ConsoleLogger,
+  HttpException,
   Module,
   ValidationPipe,
   type DynamicModule,
@@ -15,6 +16,10 @@ import { rateLimit } from 'express-rate-limit';
 import express from 'express';
 import { IdentityModule } from './auth/module.js';
 import { ClassesModule } from './classes/module.js';
+import { PublicationModule } from './publication/module.js';
+import { MediaService } from './publication/media.js';
+import { IdentityService } from './auth/service.js';
+import { sessionToken } from './auth/security.js';
 import { type Environment } from './config.js';
 import { createDatabase, type Database } from './database.js';
 import {
@@ -51,6 +56,7 @@ class FoundationModule {
       imports: [
         identity,
         ClassesModule.register(database, identity, environment.PUBLIC_WEB_URL),
+        PublicationModule.register(database, storage, identity),
       ],
       controllers: [HealthController],
       providers: [
@@ -101,7 +107,7 @@ export async function createApp(environment: Environment) {
   app.use(helmet());
   app.enableCors({
     origin: new URL(environment.PUBLIC_WEB_URL).origin,
-    methods: ['GET', 'HEAD', 'OPTIONS', 'POST', 'PATCH'],
+    methods: ['GET', 'HEAD', 'OPTIONS', 'POST', 'PATCH', 'DELETE'],
     credentials: true,
     allowedHeaders: ['Content-Type'],
   });
@@ -118,10 +124,15 @@ export async function createApp(environment: Environment) {
         });
         return;
       }
-      if (!request.is('application/json')) {
+      const binary =
+        request.method === 'POST' &&
+        /^\/media\/[a-f0-9-]{36}\/content$/.test(request.path);
+      if (
+        !request.is(binary ? 'application/octet-stream' : 'application/json')
+      ) {
         response.status(415).json({
           statusCode: 415,
-          message: 'JSON required.',
+          message: 'Unsupported content type.',
           requestId: response.getHeader('x-request-id'),
         });
         return;
@@ -144,7 +155,6 @@ export async function createApp(environment: Environment) {
         }),
     }),
   );
-  app.use(express.json({ limit: '16kb', strict: true }));
   app.use(
     rateLimit({
       windowMs: 60_000,
@@ -159,6 +169,70 @@ export async function createApp(environment: Environment) {
         }),
     }),
   );
+  let activeUploads = 0;
+  app.use(async (request: Request, response: Response, next: NextFunction) => {
+    const match =
+      request.method === 'POST' &&
+      /^\/media\/([a-f0-9-]{36})\/content$/.exec(request.path);
+    if (!match) {
+      next();
+      return;
+    }
+    try {
+      const user = await app
+        .get(IdentityService)
+        .authenticate(sessionToken(request.headers.cookie));
+      const id = match[1];
+      if (!id || !/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(id)) {
+        throw new HttpException('Invalid request.', 400);
+      }
+      await app.get(MediaService).authorizeContent(user, id);
+      if (activeUploads >= 4) throw new HttpException('Uploads are busy.', 429);
+      activeUploads++;
+      let released = false;
+      const release = () => {
+        if (!released) {
+          released = true;
+          activeUploads--;
+          clearTimeout(timeout);
+        }
+      };
+      const timeout = setTimeout(() => {
+        response.destroy();
+        release();
+      }, 60000);
+      timeout.unref();
+      response.once('finish', release);
+      response.once('close', release);
+      express.raw({
+        type: 'application/octet-stream',
+        limit: '8mb',
+        inflate: false,
+      })(request, response, next);
+    } catch (error) {
+      const status = error instanceof HttpException ? error.getStatus() : 500;
+      if (status === 500)
+        logger.error({
+          event: 'upload.authorization.error',
+          requestId: response.getHeader('x-request-id'),
+        });
+      response.status(status).json({
+        statusCode: status,
+        message: 'Upload unavailable.',
+        requestId: response.getHeader('x-request-id'),
+      });
+    }
+  });
+  app.use((request: Request, response: Response, next: NextFunction) => {
+    const yearbook =
+      request.method === 'PATCH' &&
+      /^\/classes\/[a-f0-9-]{36}\/yearbook$/.test(request.path);
+    express.json({ limit: yearbook ? '128kb' : '16kb', strict: true })(
+      request,
+      response,
+      next,
+    );
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -176,14 +250,14 @@ export async function createApp(environment: Environment) {
     app,
     new DocumentBuilder()
       .setTitle('Yearbook API')
-      .setVersion('0.2.0')
+      .setVersion('0.3.0')
       .addCookieAuth(
         'yearbook_session',
         { type: 'apiKey', in: 'cookie' },
         'session',
       )
       .setDescription(
-        'Operations, identity, schools, classes and invitations. Mutations require JSON and the configured web Origin. Opaque HttpOnly sessions; verification required before login. Collections use page and pageSize (maximum 50).',
+        'Identity, schools/classes, invitations, private member profiles, media and draft yearbooks. Mutations require the configured web Origin and JSON, except the bounded binary media content endpoint. Opaque HttpOnly sessions; verification required before login. Collections use page and pageSize (maximum 50). Publication is not yet available.',
       )
       .build(),
   );

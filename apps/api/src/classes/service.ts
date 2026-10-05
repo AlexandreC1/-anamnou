@@ -54,7 +54,11 @@ export class ClassesService {
         where: { id },
         include: { school: { select: { name: true } } },
       })),
-      permissions: { manage: access.admin, directory: !access.guest },
+      permissions: {
+        manage: access.admin,
+        directory: !access.guest,
+        contribute: !access.guest && !!access.memberId,
+      },
       memberCount: access.guest
         ? null
         : await tx.classMembership.count({

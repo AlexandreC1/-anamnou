@@ -1,3 +1,5 @@
+import { apiFetch } from './api-transport';
+
 export class ApiError extends Error {
   constructor(public readonly status: number) {
     super('Request failed');
@@ -9,7 +11,7 @@ export async function identityRequest(
   method = 'POST',
   signal?: AbortSignal,
 ): Promise<unknown> {
-  const response = await fetch('/api' + path, {
+  const response = await apiFetch(path, {
     method,
     credentials: 'same-origin',
     cache: 'no-store',
