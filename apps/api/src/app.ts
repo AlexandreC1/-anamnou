@@ -80,6 +80,16 @@ class FoundationModule {
     };
   }
 }
+const limitResponse = {
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  handler: (_request: Request, response: Response) =>
+    response.status(429).json({
+      statusCode: 429,
+      message: 'Too many requests. Please try again later.',
+      requestId: response.getHeader('x-request-id'),
+    }),
+} as const;
 export async function createApp(environment: Environment) {
   const database = createDatabase(environment.DATABASE_URL);
   const storage = new S3ObjectStorage(environment);
@@ -158,14 +168,7 @@ export async function createApp(environment: Environment) {
     rateLimit({
       windowMs: 60_000,
       limit: 120,
-      standardHeaders: 'draft-8',
-      legacyHeaders: false,
-      handler: (_request, response) =>
-        response.status(429).json({
-          statusCode: 429,
-          message: 'Too many requests. Please try again later.',
-          requestId: response.getHeader('x-request-id'),
-        }),
+      ...limitResponse,
     }),
   );
   app.use(
@@ -176,14 +179,7 @@ export async function createApp(environment: Environment) {
         : {}),
       windowMs: 60000,
       limit: 60,
-      standardHeaders: 'draft-8',
-      legacyHeaders: false,
-      handler: (_request, response) =>
-        response.status(429).json({
-          statusCode: 429,
-          message: 'Too many requests. Please try again later.',
-          requestId: response.getHeader('x-request-id'),
-        }),
+      ...limitResponse,
     }),
   );
   app.use(
@@ -195,14 +191,7 @@ export async function createApp(environment: Environment) {
       skip: (request) => request.path === '/health',
       windowMs: 60_000,
       limit: 120,
-      standardHeaders: 'draft-8',
-      legacyHeaders: false,
-      handler: (_request, response) =>
-        response.status(429).json({
-          statusCode: 429,
-          message: 'Too many requests. Please try again later.',
-          requestId: response.getHeader('x-request-id'),
-        }),
+      ...limitResponse,
     }),
   );
   let activeUploads = 0;

@@ -311,14 +311,17 @@ export class IdentityService {
 
   async sessions(token: string | null) {
     const user = await this.authenticate(token);
+    const { role } = await this.database.user.findUniqueOrThrow({
+      where: { id: user.id },
+      select: { role: true },
+    });
     const rows = await this.database.session.findMany({
       where: {
         userId: user.id,
         expiresAt: { gt: new Date() },
         lastSeenAt: {
           gt: new Date(
-            Date.now() -
-              (user.role === 'PLATFORM_ADMIN' ? 1 : 24) * 60 * 60_000,
+            Date.now() - (role === 'PLATFORM_ADMIN' ? 1 : 24) * 60 * 60_000,
           ),
         },
       },

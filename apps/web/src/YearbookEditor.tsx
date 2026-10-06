@@ -1,8 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { classRequest, classError, useResource } from './class-api';
-import { LoadState } from './ClassCommon';
-import { ApiError } from './identity-api';
+import { classRequest, useResource } from './class-api';
+import { LoadState, SaveError } from './ClassCommon';
 import type { Locale } from './identity-copy';
 import { yearbookCopy } from './yearbook-copy';
 import {
@@ -387,20 +386,7 @@ function Editor({
         </button>
       </div>
       <div className="save-bar">
-        {error !== undefined && (
-          <div role="alert">
-            <p>
-              {error instanceof ApiError && error.status === 409
-                ? t.conflict
-                : classError(error, locale)}
-            </p>
-            {error instanceof ApiError && error.status === 409 && (
-              <button type="button" onClick={reload}>
-                {t.reload}
-              </button>
-            )}
-          </div>
-        )}
+        <SaveError error={error} locale={locale} onReload={reload} />
         {saved && <p role="status">{t.saved}</p>}
         <button disabled={busy || uploads > 0}>
           {busy ? t.saving : t.save}

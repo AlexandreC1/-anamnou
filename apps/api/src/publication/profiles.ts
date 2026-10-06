@@ -16,11 +16,7 @@ const photoSelection = {
   height: true,
 } as const;
 
-export function profileView(
-  profile: Profile,
-  own: boolean,
-  includeContact = true,
-) {
+function profileView(profile: Profile, own: boolean, includeContact = true) {
   const { contact, contactVisibility, ...publicFields } = profile;
   return {
     ...publicFields,

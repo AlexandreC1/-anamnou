@@ -8,7 +8,12 @@ import {
 } from '@nestjs/common';
 import type { z } from 'zod';
 import type { MediaAsset, User } from '../generated/prisma/client.js';
-import { ClassAccess, audit } from '../classes/access.js';
+import {
+  ClassAccess,
+  audit,
+  type ClassScope,
+  type Transaction,
+} from '../classes/access.js';
 import type { ObjectStorage } from '../storage.js';
 import type { intentInput } from './rules.js';
 import { normalizeImage } from './image.js';
@@ -21,6 +26,46 @@ const view = (asset: MediaAsset) => ({
   height: asset.height,
   size: asset.size,
 });
+// Upload steps belong to the asset's owner; yearbook media also requires class admin.
+async function ownedAsset(
+  tx: Transaction,
+  scope: ClassScope,
+  user: User,
+  id: string,
+) {
+  const current = await tx.mediaAsset.findUniqueOrThrow({ where: { id } });
+  if (
+    scope.guest ||
+    current.ownerUserId !== user.id ||
+    (current.purpose === 'YEARBOOK' && !scope.admin)
+  )
+    throw new NotFoundException();
+  return current;
+}
+// Ready media is readable by its owner, or by members when a shared profile or
+// the draft references it. Admins may read any yearbook media in their class.
+async function readableAsset(
+  tx: Transaction,
+  scope: ClassScope,
+  user: User,
+  id: string,
+) {
+  const current = await tx.mediaAsset.findUniqueOrThrow({ where: { id } });
+  if (scope.guest || current.status !== 'READY') throw new NotFoundException();
+  const shared =
+    current.purpose === 'PROFILE'
+      ? await tx.profile.count({
+          where: {
+            photoAssetId: id,
+            visibility: 'CLASS',
+            membership: { status: 'ACTIVE', role: { not: 'GUEST' } },
+          },
+        })
+      : scope.admin ||
+        (await tx.yearbookSectionMedia.count({ where: { assetId: id } }));
+  if (current.ownerUserId !== user.id && !shared) throw new NotFoundException();
+  return current;
+}
 export class MediaService {
   private decoding = 0;
   constructor(
@@ -99,15 +144,7 @@ export class MediaService {
       user,
       false,
       async (tx, scope) => {
-        const current = await tx.mediaAsset.findUniqueOrThrow({
-          where: { id },
-        });
-        if (
-          scope.guest ||
-          current.ownerUserId !== user.id ||
-          (current.purpose === 'YEARBOOK' && !scope.admin)
-        )
-          throw new NotFoundException();
+        const current = await ownedAsset(tx, scope, user, id);
         if (current.status !== 'PENDING' || current.expiresAt <= new Date())
           throw new ConflictException();
         return current;
@@ -132,15 +169,7 @@ export class MediaService {
       user,
       true,
       async (tx, scope) => {
-        const current = await tx.mediaAsset.findUniqueOrThrow({
-          where: { id },
-        });
-        if (
-          scope.guest ||
-          current.ownerUserId !== user.id ||
-          (current.purpose === 'YEARBOOK' && !scope.admin)
-        )
-          throw new NotFoundException();
+        const current = await ownedAsset(tx, scope, user, id);
         if (current.status !== 'PENDING' || current.expiresAt <= new Date())
           throw new ConflictException();
         await tx.mediaAsset.update({
@@ -157,15 +186,7 @@ export class MediaService {
         user,
         true,
         async (tx, scope) => {
-          const current = await tx.mediaAsset.findUniqueOrThrow({
-            where: { id },
-          });
-          if (
-            scope.guest ||
-            current.ownerUserId !== user.id ||
-            (current.purpose === 'YEARBOOK' && !scope.admin)
-          )
-            throw new NotFoundException();
+          const current = await ownedAsset(tx, scope, user, id);
           if (
             current.status !== 'PROCESSING' ||
             current.expiresAt <= new Date()
@@ -201,15 +222,7 @@ export class MediaService {
       user,
       true,
       async (tx, scope) => {
-        const current = await tx.mediaAsset.findUniqueOrThrow({
-          where: { id },
-        });
-        if (
-          scope.guest ||
-          current.ownerUserId !== user.id ||
-          (current.purpose === 'YEARBOOK' && !scope.admin)
-        )
-          throw new NotFoundException();
+        const current = await ownedAsset(tx, scope, user, id);
         if (current.status === 'READY') return view(current);
         if (current.status !== 'UPLOADED' || current.expiresAt <= new Date())
           throw new ConflictException();
@@ -236,27 +249,8 @@ export class MediaService {
       asset.classId,
       user,
       false,
-      async (tx, scope) => {
-        const current = await tx.mediaAsset.findUniqueOrThrow({
-          where: { id },
-        });
-        if (scope.guest || current.status !== 'READY')
-          throw new NotFoundException();
-        const owner = current.ownerUserId === user.id;
-        const shared =
-          current.purpose === 'PROFILE'
-            ? await tx.profile.count({
-                where: {
-                  photoAssetId: id,
-                  visibility: 'CLASS',
-                  membership: { status: 'ACTIVE', role: { not: 'GUEST' } },
-                },
-              })
-            : scope.admin ||
-              (await tx.yearbookSectionMedia.count({ where: { assetId: id } }));
-        if (!owner && !shared) throw new NotFoundException();
-        return current.storageKey;
-      },
+      async (tx, scope) =>
+        (await readableAsset(tx, scope, user, id)).storageKey,
     );
     // Storage reads do not hold a class/database lock. Recheck after I/O so
     // removal or privacy changes during a download cannot expose stale content.
@@ -266,24 +260,7 @@ export class MediaService {
       user,
       false,
       async (tx, scope) => {
-        const current = await tx.mediaAsset.findUniqueOrThrow({
-          where: { id },
-        });
-        if (scope.guest || current.status !== 'READY')
-          throw new NotFoundException();
-        const shared =
-          current.purpose === 'PROFILE'
-            ? await tx.profile.count({
-                where: {
-                  photoAssetId: id,
-                  visibility: 'CLASS',
-                  membership: { status: 'ACTIVE', role: { not: 'GUEST' } },
-                },
-              })
-            : scope.admin ||
-              (await tx.yearbookSectionMedia.count({ where: { assetId: id } }));
-        if (current.ownerUserId !== user.id && !shared)
-          throw new NotFoundException();
+        await readableAsset(tx, scope, user, id);
       },
     );
     return bytes;

@@ -7,7 +7,8 @@ import type { Database } from './database.js';
 import type { ObjectStorage } from './storage.js';
 import { cleanupMedia } from './publication/cleanup.js';
 
-export async function cleanupIdentity(database: Database, now = new Date()) {
+async function cleanupIdentity(database: Database) {
+  const now = new Date();
   // Bounded batches: expired state cannot accumulate into an unbounded delete.
   return database.$transaction(async (tx) => {
     const sessions =

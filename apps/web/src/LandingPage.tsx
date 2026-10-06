@@ -13,7 +13,6 @@ const en = {
   sample: 'An illustrated edition',
   open: 'Take a peek inside',
   close: 'Back to the cover',
-  appearance: 'Customize your theme',
   photo: 'Graduation friends in an illustrative yearbook',
   note: 'The little moments. The whole story.',
   inside: 'A place for every one of us.',
@@ -55,7 +54,6 @@ const content: Record<Locale, typeof en> = {
     sample: 'Yon egzanp edisyon',
     open: 'Gade anndan',
     close: 'Retounen sou kouvèti a',
-    appearance: 'Pèsonalize tèm ou',
     photo: 'Zanmi nan gradyasyon nan yon egzanp liv klas',
     note: 'Ti moman yo. Tout istwa a.',
     inside: 'Yon plas pou nou chak.',
@@ -95,7 +93,6 @@ const content: Record<Locale, typeof en> = {
     sample: 'Un exemple d’édition',
     open: 'Jeter un œil à l’intérieur',
     close: 'Revenir à la couverture',
-    appearance: 'Personnaliser votre thème',
     photo: 'Amies diplômées dans un exemple d’album',
     note: 'Les petits moments. Toute une histoire.',
     inside: 'Une place pour chacun de nous.',
@@ -136,7 +133,6 @@ const content: Record<Locale, typeof en> = {
     sample: 'Una edición ilustrativa',
     open: 'Echa un vistazo dentro',
     close: 'Volver a la portada',
-    appearance: 'Personaliza tu tema',
     photo: 'Amigas graduadas en un anuario ilustrativo',
     note: 'Los pequeños momentos. Toda la historia.',
     inside: 'Un lugar para cada uno.',
@@ -170,7 +166,7 @@ const content: Record<Locale, typeof en> = {
   },
 };
 
-export function Arrow({ diagonal = false }: { diagonal?: boolean }) {
+function Arrow({ diagonal = false }: { diagonal?: boolean }) {
   return (
     <svg
       aria-hidden="true"
@@ -239,10 +235,6 @@ function YearbookScene({ locale, theme }: { locale: Locale; theme: string }) {
         <div className="memory-line" />
       </div>
       <div className="stage-controls">
-        <Link className="appearance-link" to="/settings/appearance">
-          {t.appearance}
-          <Arrow diagonal />
-        </Link>
         <button
           className="peek-button"
           type="button"
@@ -268,10 +260,10 @@ function YearbookScene({ locale, theme }: { locale: Locale; theme: string }) {
 export function LandingPage({
   locale,
   selected,
-  theme = 'coral',
+  theme,
 }: {
   locale: Locale;
-  theme?: string;
+  theme: string;
   selected: { titleA: string; titleB: string; intro: string; discover: string };
 }) {
   const t = content[locale];

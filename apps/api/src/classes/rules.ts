@@ -19,7 +19,7 @@ const text = (max: number) =>
           character.charCodeAt(0) >= 32 && character.charCodeAt(0) !== 127,
       ),
     );
-export const slugSchema = z
+const slugSchema = z
   .string()
   .min(2)
   .max(80)

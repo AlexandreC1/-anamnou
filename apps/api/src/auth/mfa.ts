@@ -10,7 +10,7 @@ import { hashToken } from './security.js';
 
 // RFC 6238 TOTP (HMAC-SHA1, 6 digits, 30-second steps), the profile supported
 // by common authenticator apps. Implemented on node:crypto to avoid a dependency.
-export const TOTP_STEP_SECONDS = 30;
+const TOTP_STEP_SECONDS = 30;
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
 export function base32(bytes: Buffer) {

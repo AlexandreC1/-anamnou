@@ -7,11 +7,11 @@ import {
 import type { Response } from 'express';
 import { Prisma } from './generated/prisma/client.js';
 
-export interface SafeErrorEvent {
+interface SafeErrorEvent {
   requestId: string;
   statusCode: number;
 }
-export interface ErrorReporter {
+interface ErrorReporter {
   report(event: SafeErrorEvent): void;
 }
 const messages: Record<number, string> = {

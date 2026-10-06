@@ -3,6 +3,12 @@ import type { Database } from '../database.js';
 import type { Prisma, User } from '../generated/prisma/client.js';
 
 export type Transaction = Prisma.TransactionClient;
+export interface ClassScope {
+  schoolId: string;
+  admin: boolean;
+  guest: boolean;
+  memberId: string | null;
+}
 export class ClassAccess {
   constructor(readonly database: Database) {}
   async schoolAdmin(tx: Transaction, schoolId: string, user: User) {
@@ -26,15 +32,7 @@ export class ClassAccess {
     id: string,
     user: User,
     write: boolean,
-    action: (
-      tx: Transaction,
-      access: {
-        schoolId: string;
-        admin: boolean;
-        guest: boolean;
-        memberId: string | null;
-      },
-    ) => Promise<T>,
+    action: (tx: Transaction, access: ClassScope) => Promise<T>,
     requireAdmin = write,
   ) {
     return this.database.$transaction(async (tx) => {

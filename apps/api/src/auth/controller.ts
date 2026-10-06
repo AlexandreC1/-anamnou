@@ -44,12 +44,17 @@ export class IdentityController {
     @Inject(MfaService) private readonly mfa: MfaService,
     @Inject(AUTH_SECURE) private readonly secure: boolean,
   ) {}
-  private setSession(response: Response, token: string) {
-    response.cookie(cookieName, token, {
+  private cookie() {
+    return {
       httpOnly: true,
       sameSite: 'strict',
       secure: this.secure,
       path: '/',
+    } as const;
+  }
+  private setSession(response: Response, token: string) {
+    response.cookie(cookieName, token, {
+      ...this.cookie(),
       maxAge: SESSION_MS,
     });
   }
@@ -122,10 +127,7 @@ export class IdentityController {
     await this.identity.logout(sessionToken(request.headers.cookie));
     if ('challenge' in result) {
       response.cookie(mfaCookieName, result.challenge, {
-        httpOnly: true,
-        sameSite: 'strict',
-        secure: this.secure,
-        path: '/',
+        ...this.cookie(),
         maxAge: MFA_CHALLENGE_MS,
       });
       return { mfaRequired: true };
@@ -157,12 +159,7 @@ export class IdentityController {
       sessionToken(request.headers.cookie, mfaCookieName),
       parse(factorBody, body).code,
     );
-    response.clearCookie(mfaCookieName, {
-      httpOnly: true,
-      sameSite: 'strict',
-      secure: this.secure,
-      path: '/',
-    });
+    response.clearCookie(mfaCookieName, this.cookie());
     this.setSession(response, result.token);
     return result.user;
   }
@@ -174,12 +171,7 @@ export class IdentityController {
     @Res({ passthrough: true }) response: Response,
   ) {
     await this.identity.logout(sessionToken(request.headers.cookie));
-    response.clearCookie(cookieName, {
-      httpOnly: true,
-      sameSite: 'strict',
-      secure: this.secure,
-      path: '/',
-    });
+    response.clearCookie(cookieName, this.cookie());
     return { status: 'ok' };
   }
 

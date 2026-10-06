@@ -48,7 +48,7 @@ export const intentInput = z
     alt: text(240).min(1),
   })
   .strict();
-export const sectionInput = z
+const sectionInput = z
   .object({
     id: idSchema.optional(),
     type: z.enum([

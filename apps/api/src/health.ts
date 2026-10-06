@@ -17,7 +17,7 @@ import { ANALYTICS, type Analytics } from './analytics.js';
 
 export const DATABASE = Symbol('DATABASE');
 export const STORAGE = Symbol('STORAGE');
-export class HealthResponse {
+class HealthResponse {
   @ApiProperty({ enum: ['ok'] })
   status = 'ok' as const;
 }

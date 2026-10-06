@@ -3,7 +3,33 @@ import { Link } from 'react-router';
 import { classCopy } from './class-copy';
 import { classError, classRequest, type Page, type Role } from './class-api';
 import type { Locale } from './identity-copy';
+import { ApiError } from './identity-api';
+import { yearbookCopy } from './yearbook-copy';
 
+// Save failures for versioned drafts; a 409 means someone saved a newer version.
+export function SaveError({
+  error,
+  locale,
+  onReload,
+}: {
+  error: unknown;
+  locale: Locale;
+  onReload: () => void;
+}) {
+  if (error === undefined) return null;
+  const t = yearbookCopy[locale];
+  const conflict = error instanceof ApiError && error.status === 409;
+  return (
+    <div role="alert">
+      <p>{conflict ? t.conflict : classError(error, locale)}</p>
+      {conflict && (
+        <button type="button" onClick={onReload}>
+          {t.reload}
+        </button>
+      )}
+    </div>
+  );
+}
 export function LoadState({
   error,
   retry,

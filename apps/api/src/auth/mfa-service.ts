@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Database } from '../database.js';
+import type { Prisma } from '../generated/prisma/client.js';
 import type { IdentityService } from './service.js';
 import { hashToken } from './security.js';
 import {
@@ -17,6 +18,32 @@ import {
 } from './mfa.js';
 
 const PENDING_MS = 10 * 60_000;
+type Transaction = Prisma.TransactionClient;
+async function replaceRecoveryCodes(
+  tx: Transaction,
+  userId: string,
+  codes: string[],
+) {
+  await tx.mfaRecoveryCode.deleteMany({ where: { userId } });
+  await tx.mfaRecoveryCode.createMany({
+    data: codes.map((value) => ({ userId, codeHash: recoveryCodeHash(value) })),
+  });
+}
+// Signs out every other session after a factor change.
+async function keepOnlySession(
+  tx: Transaction,
+  userId: string,
+  token: string,
+  mfaVerifiedAt: Date | null,
+) {
+  await tx.session.deleteMany({
+    where: { userId, tokenHash: { not: hashToken(token) } },
+  });
+  await tx.session.update({
+    where: { tokenHash: hashToken(token) },
+    data: { mfaVerifiedAt },
+  });
+}
 const pendingContext = (userId: string) => userId + ':pending';
 
 export class MfaService {
@@ -88,21 +115,9 @@ export class MfaService {
           mfaPendingExpiresAt: null,
         },
       });
-      await tx.mfaRecoveryCode.deleteMany({ where: { userId: user.id } });
-      await tx.mfaRecoveryCode.createMany({
-        data: codes.map((value) => ({
-          userId: user.id,
-          codeHash: recoveryCodeHash(value),
-        })),
-      });
+      await replaceRecoveryCodes(tx, user.id, codes);
       // Other sessions were established without the new factor.
-      await tx.session.deleteMany({
-        where: { userId: user.id, tokenHash: { not: hashToken(token!) } },
-      });
-      await tx.session.update({
-        where: { tokenHash: hashToken(token!) },
-        data: { mfaVerifiedAt: new Date() },
-      });
+      await keepOnlySession(tx, user.id, token!, new Date());
       await tx.auditLog.create({
         data: {
           actorUserId: user.id,
@@ -130,13 +145,7 @@ export class MfaService {
       });
       await tx.mfaRecoveryCode.deleteMany({ where: { userId: user.id } });
       await tx.mfaChallenge.deleteMany({ where: { userId: user.id } });
-      await tx.session.deleteMany({
-        where: { userId: user.id, tokenHash: { not: hashToken(token!) } },
-      });
-      await tx.session.update({
-        where: { tokenHash: hashToken(token!) },
-        data: { mfaVerifiedAt: null },
-      });
+      await keepOnlySession(tx, user.id, token!, null);
       await tx.auditLog.create({
         data: {
           actorUserId: user.id,
@@ -152,13 +161,7 @@ export class MfaService {
     const user = await this.reauthenticate(token, password, code);
     const codes = newRecoveryCodes();
     await this.database.$transaction(async (tx) => {
-      await tx.mfaRecoveryCode.deleteMany({ where: { userId: user.id } });
-      await tx.mfaRecoveryCode.createMany({
-        data: codes.map((value) => ({
-          userId: user.id,
-          codeHash: recoveryCodeHash(value),
-        })),
-      });
+      await replaceRecoveryCodes(tx, user.id, codes);
       await tx.auditLog.create({
         data: {
           actorUserId: user.id,

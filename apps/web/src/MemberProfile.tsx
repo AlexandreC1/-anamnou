@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { classError, classRequest, useResource } from './class-api';
-import { LoadState } from './ClassCommon';
+import { classRequest, useResource } from './class-api';
+import { LoadState, SaveError } from './ClassCommon';
 import { ApiError } from './identity-api';
 import type { Locale } from './identity-copy';
 import { yearbookCopy } from './yearbook-copy';
@@ -291,20 +291,7 @@ function ProfileEditor({
           <p className="field-hint">{t.contactNote}</p>
         </fieldset>
         <div className="save-bar">
-          {error !== undefined && (
-            <div role="alert">
-              <p>
-                {error instanceof ApiError && error.status === 409
-                  ? t.conflict
-                  : classError(error, locale)}
-              </p>
-              {error instanceof ApiError && error.status === 409 && (
-                <button type="button" onClick={reload}>
-                  {t.reload}
-                </button>
-              )}
-            </div>
-          )}
+          <SaveError error={error} locale={locale} onReload={reload} />
           {saved && <p role="status">{t.saved}</p>}
           <button disabled={busy || uploading}>
             {busy ? t.saving : t.save}

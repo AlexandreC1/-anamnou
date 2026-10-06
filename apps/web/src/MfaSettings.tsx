@@ -31,7 +31,7 @@ const en = {
   retry: 'Try again',
 };
 type MfaCopy = typeof en;
-export const mfaCopy: Record<Locale, MfaCopy> = {
+const mfaCopy: Record<Locale, MfaCopy> = {
   en,
   fr: {
     title: 'Validation en deux étapes',

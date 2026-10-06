@@ -467,23 +467,6 @@ a svg {
   justify-content: space-between;
   gap: 8px;
 }
-.appearance-link {
-  display: flex;
-  min-height: 44px;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 13px;
-  border: 1px solid oklch(100% 0 0 / 0.85);
-  border-radius: 99px;
-  background: oklch(99% 0.008 60 / 0.75);
-  font-size: 0.68rem;
-  text-decoration: none;
-  backdrop-filter: blur(16px);
-}
-.appearance-link svg {
-  width: 16px;
-  height: 16px;
-}
 .appearance-settings {
   max-width: 880px;
   margin: 70px auto 96px;
