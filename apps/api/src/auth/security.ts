@@ -5,6 +5,8 @@ import * as argon2 from 'argon2';
 
 export const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
 export const cookieName = 'yearbook_session';
+export const mfaCookieName = 'yearbook_mfa';
+export const MFA_CHALLENGE_MS = 5 * 60 * 1000;
 export const hashToken = (token: string) =>
   createHash('sha256').update(token).digest('hex');
 export const newToken = () => randomBytes(32).toString('hex');
@@ -34,12 +36,15 @@ export function parse<T>(schema: z.ZodType<T>, value: unknown): T {
   if (!result.success) throw new BadRequestException();
   return result.data;
 }
-export function sessionToken(cookie: string | undefined): string | null {
+export function sessionToken(
+  cookie: string | undefined,
+  name = cookieName,
+): string | null {
   const matches = (cookie ?? '')
     .split(';')
     .map((part) => part.trim())
-    .filter((part) => part.startsWith(cookieName + '='));
+    .filter((part) => part.startsWith(name + '='));
   if (matches.length !== 1) return null;
-  const token = matches[0]?.slice(cookieName.length + 1);
+  const token = matches[0]?.slice(name.length + 1);
   return token && tokenSchema.safeParse(token).success ? token : null;
 }

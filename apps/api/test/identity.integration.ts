@@ -7,6 +7,7 @@ import { createDatabase } from '../src/database.js';
 import { parseEnvironment } from '../src/config.js';
 import { hashToken, newToken } from '../src/auth/security.js';
 import { IdentityService } from '../src/auth/service.js';
+import { totp } from '../src/auth/mfa.js';
 
 const environment = parseEnvironment(process.env);
 if (environment.APP_ENV === 'production')
@@ -137,6 +138,7 @@ test('registration, SMTP verification, safe profile updates, cookie protection a
       'emailVerified',
       'id',
       'locale',
+      'mfaEnabled',
       'role',
     ]);
     assert.equal(profile.role, 'USER');
@@ -225,10 +227,17 @@ test('privilege escalation, user ID injection, CSRF, malformed input and authent
       where: { email: f.email },
     });
     assert.throws(() => f.app.get(IdentityService).requirePlatformAdmin(user));
-    assert.doesNotThrow(() =>
+    assert.throws(() =>
       f.app
         .get(IdentityService)
         .requirePlatformAdmin({ ...user, role: 'PLATFORM_ADMIN' }),
+    );
+    assert.doesNotThrow(() =>
+      f.app.get(IdentityService).requirePlatformAdmin({
+        ...user,
+        role: 'PLATFORM_ADMIN',
+        mfaEnabledAt: new Date(),
+      }),
     );
     await assert.rejects(
       database.user.update({
@@ -457,26 +466,38 @@ test('invalid JSON, body size, content type and per-IP request limits are enforc
 test.after(async () => database.$disconnect());
 
 test('failed logins cannot lock out the owner; sessions are private and revocable', async () => {
-  const f = await fixture();
+  // Trust the loopback proxy so each request can present a distinct client address.
+  const f = await fixture({ TRUST_PROXY_CIDRS: ['127.0.0.1'] });
   const other = await fixture();
   try {
     await f.verify();
     await other.verify();
+    const from = (address: string, password: string) =>
+      fetch(f.url + '/auth/login', {
+        method: 'POST',
+        headers: {
+          Origin: environment.PUBLIC_WEB_URL,
+          'Content-Type': 'application/json',
+          'X-Forwarded-For': address,
+        },
+        body: JSON.stringify({ email: f.email, password }),
+      });
     const first = await f.login();
     const second = await f.login();
     const foreign = await other.login();
-    for (let index = 0; index < 11; index++) {
-      const response = await f.call('/auth/login', {
-        email: f.email,
-        password: 'incorrect',
-      });
-      assert.equal(response.status, index < 10 ? 401 : 429);
-    }
+    for (let index = 0; index < 11; index++)
+      assert.equal(
+        (await from('203.0.113.7', 'incorrect')).status,
+        index < 10 ? 401 : 429,
+      );
+    // The attacking address cannot confirm a correct guess once cut off.
+    assert.equal((await from('203.0.113.7', f.password)).status, 429);
+    assert.equal((await from('198.51.100.20', f.password)).status, 200);
     const current = await f.login();
     const list = await f.call('/me/sessions', undefined, current);
     assert.equal(list.status, 200);
     const sessions = (await list.json()) as { id: string; current: boolean }[];
-    assert.equal(sessions.length, 3);
+    assert.equal(sessions.length, 4);
     assert.equal(sessions.filter((session) => session.current).length, 1);
     assert.ok(sessions.every((session) => !('tokenHash' in session)));
     const victim = sessions.find((session) => !session.current)!;
@@ -497,5 +518,261 @@ test('failed logins cannot lock out the owner; sessions are private and revocabl
   } finally {
     await f.close();
     await other.close();
+  }
+});
+
+function decodeBase32(value: string) {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let bits = 0;
+  let current = 0;
+  const bytes: number[] = [];
+  for (const character of value) {
+    current = (current << 5) | alphabet.indexOf(character);
+    bits += 5;
+    if (bits >= 8) {
+      bytes.push((current >>> (bits - 8)) & 255);
+      bits -= 8;
+    }
+  }
+  return Buffer.from(bytes);
+}
+const cookieValue = (response: Response, name: string) =>
+  response.headers
+    .getSetCookie()
+    .map((header) => header.split(';')[0] ?? '')
+    .find(
+      (part) => part.startsWith(name + '=') && part.length > name.length + 1,
+    );
+
+test('authenticator enrollment, MFA sign-in, replay, brute force, privilege gating and step-up', async () => {
+  const f = await fixture();
+  try {
+    await f.verify();
+    const cookie = await f.login();
+    const stale = await f.login();
+    assert.deepEqual(
+      await (await f.call('/me/mfa', undefined, cookie)).json(),
+      { enabled: false, recoveryCodesRemaining: 0 },
+    );
+    assert.equal(
+      (await f.call('/me/mfa/setup', { password: 'incorrect' }, cookie)).status,
+      401,
+    );
+    const setup = await f.call(
+      '/me/mfa/setup',
+      { password: f.password },
+      cookie,
+    );
+    assert.equal(setup.status, 200);
+    const { secret, uri } = (await setup.json()) as {
+      secret: string;
+      uri: string;
+    };
+    assert.match(uri, /^otpauth:\/\/totp\//);
+    const key = decodeBase32(secret);
+    const step = () => Math.floor(Date.now() / 30_000);
+    const pending = await database.user.findUniqueOrThrow({
+      where: { email: f.email },
+    });
+    assert.ok(
+      pending.mfaPendingSecret && !pending.mfaPendingSecret.includes(secret),
+    );
+    assert.equal(
+      (await f.call('/me/mfa/enable', { code: totp(key, step() + 5) }, cookie))
+        .status,
+      400,
+    );
+    const enabled = await f.call(
+      '/me/mfa/enable',
+      { code: totp(key, step()) },
+      cookie,
+    );
+    assert.equal(enabled.status, 200);
+    const { recoveryCodes } = (await enabled.json()) as {
+      recoveryCodes: string[];
+    };
+    assert.equal(recoveryCodes.length, 10);
+    // Enrollment ends sessions that never proved the new factor.
+    assert.equal((await f.call('/me', undefined, stale)).status, 401);
+    const me = (await (await f.call('/me', undefined, cookie)).json()) as {
+      mfaEnabled: boolean;
+    };
+    assert.equal(me.mfaEnabled, true);
+    const stored = await database.user.findUniqueOrThrow({
+      where: { email: f.email },
+    });
+    assert.equal(stored.mfaPendingSecret, null);
+    assert.ok(stored.mfaSecret && !stored.mfaSecret.includes(secret));
+    const storedCodes = await database.mfaRecoveryCode.findMany({
+      where: { userId: stored.id },
+    });
+    assert.ok(
+      storedCodes.every((row) =>
+        recoveryCodes.every(
+          (code) => !row.codeHash.includes(code.replace(/-/g, '')),
+        ),
+      ),
+    );
+
+    const signIn = async () => {
+      const response = await f.call('/auth/login', {
+        email: f.email,
+        password: f.password,
+      });
+      assert.equal(response.status, 200);
+      assert.deepEqual(await response.json(), { mfaRequired: true });
+      assert.equal(cookieValue(response, 'yearbook_session'), undefined);
+      const challenge = cookieValue(response, 'yearbook_mfa');
+      assert.ok(challenge);
+      assert.match(response.headers.get('set-cookie') ?? '', /HttpOnly/);
+      return challenge;
+    };
+    const finish = (challenge: string, code: string) =>
+      f.call('/auth/mfa', { code }, challenge);
+
+    // The code used for enrollment cannot be replayed at sign-in.
+    let challenge = await signIn();
+    assert.equal((await finish(challenge, totp(key, step()))).status, 401);
+    const next = totp(key, step() + 1);
+    const completed = await finish(challenge, next);
+    assert.equal(completed.status, 200);
+    const mfaSession = cookieValue(completed, 'yearbook_session');
+    assert.ok(mfaSession);
+    assert.equal((await f.call('/me', undefined, mfaSession)).status, 200);
+    // A consumed challenge and an already used step are both rejected.
+    assert.equal((await finish(challenge, next)).status, 401);
+    challenge = await signIn();
+    assert.equal((await finish(challenge, next)).status, 401);
+
+    // Recovery codes work once.
+    assert.equal((await finish(challenge, recoveryCodes[0]!)).status, 200);
+    challenge = await signIn();
+    assert.equal((await finish(challenge, recoveryCodes[0]!)).status, 401);
+
+    // Each challenge allows five guesses; afterwards even a valid code fails.
+    challenge = await signIn();
+    for (let index = 0; index < 5; index++)
+      assert.equal((await finish(challenge, '000000')).status, 401);
+    assert.equal((await finish(challenge, recoveryCodes[1]!)).status, 401);
+    assert.equal(
+      await database.mfaRecoveryCode.count({
+        where: { userId: stored.id, usedAt: { not: null } },
+      }),
+      1,
+    );
+    await database.authThrottle.deleteMany({
+      where: { key: { endsWith: hashToken(stored.id) } },
+    });
+
+    // Platform privileges are active only on MFA-verified sessions.
+    await database.user.update({
+      where: { id: stored.id },
+      data: { role: 'PLATFORM_ADMIN' },
+    });
+    const unverified = 'yearbook_session=' + newToken();
+    await database.session.create({
+      data: {
+        tokenHash: hashToken(unverified.split('=')[1]!),
+        userId: stored.id,
+        expiresAt: new Date(Date.now() + 600000),
+      },
+    });
+    const roleOf = async (session: string) =>
+      (
+        (await (await f.call('/me', undefined, session)).json()) as {
+          role: string;
+        }
+      ).role;
+    assert.equal(await roleOf(unverified), 'USER');
+    assert.equal(await roleOf(mfaSession), 'PLATFORM_ADMIN');
+    const school = await database.school.create({
+      data: {
+        name: 'MFA verification school',
+        slug: 'mfa-' + newToken().slice(0, 12),
+      },
+    });
+    try {
+      const verify = (session: string, code: string) =>
+        f.call(
+          '/schools/' + school.id + '/verification',
+          {
+            verified: true,
+            reason: 'Reviewed institutional ownership evidence.',
+            password: f.password,
+            code,
+          },
+          session,
+          undefined,
+          'PATCH',
+        );
+      assert.equal((await verify(unverified, recoveryCodes[3]!)).status, 403);
+      assert.equal((await verify(mfaSession, '123456')).status, 400);
+      await database.authThrottle.deleteMany({
+        where: { key: { endsWith: hashToken(stored.id) } },
+      });
+      assert.equal((await verify(mfaSession, recoveryCodes[4]!)).status, 200);
+      assert.ok(
+        (await database.school.findUniqueOrThrow({ where: { id: school.id } }))
+          .verifiedAt,
+      );
+    } finally {
+      await database.auditLog.deleteMany({ where: { schoolId: school.id } });
+      await database.school.delete({ where: { id: school.id } });
+    }
+
+    // Disabling needs the password and a factor, and clears every MFA record.
+    assert.equal(
+      (
+        await f.call(
+          '/me/mfa/disable',
+          { password: f.password, code: '000000' },
+          mfaSession,
+        )
+      ).status,
+      400,
+    );
+    assert.equal(
+      (
+        await f.call(
+          '/me/mfa/disable',
+          { password: f.password, code: recoveryCodes[5]! },
+          mfaSession,
+        )
+      ).status,
+      200,
+    );
+    const disabled = await database.user.findUniqueOrThrow({
+      where: { id: stored.id },
+    });
+    assert.equal(disabled.mfaSecret, null);
+    assert.equal(
+      await database.mfaRecoveryCode.count({ where: { userId: stored.id } }),
+      0,
+    );
+    assert.equal(await roleOf(mfaSession), 'USER');
+    const audit = await database.auditLog.findMany({
+      where: { targetId: stored.id },
+    });
+    for (const action of [
+      'auth.mfa_enable',
+      'auth.mfa_recovery_used',
+      'auth.mfa_disable',
+    ])
+      assert.ok(audit.some((row) => row.action === action));
+    const serialized = JSON.stringify(audit);
+    assert.ok(!serialized.includes(secret));
+    assert.ok(recoveryCodes.every((code) => !serialized.includes(code)));
+  } finally {
+    await database.authThrottle.deleteMany({
+      where: {
+        key: {
+          endsWith: hashToken(
+            (await database.user.findUnique({ where: { email: f.email } }))
+              ?.id ?? '',
+          ),
+        },
+      },
+    });
+    await f.close();
   }
 });

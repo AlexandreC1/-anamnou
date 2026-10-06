@@ -19,11 +19,20 @@ it('revokes another session and signs out everywhere through the API', async () 
       lastSeenAt: '2026-10-06T09:00:00Z',
     },
   ];
+  // Responses are routed by path: the MFA panel loads alongside the sessions.
   const request = vi
     .spyOn(globalThis, 'fetch')
-    .mockResolvedValueOnce(new Response(JSON.stringify(sessions)))
-    .mockResolvedValueOnce(new Response('{"status":"ok"}'))
-    .mockResolvedValueOnce(new Response('{"status":"ok"}'));
+    .mockImplementation(async (input) =>
+      String(input) === '/api/me/sessions'
+        ? new Response(JSON.stringify(sessions))
+        : String(input) === '/api/me/mfa'
+          ? new Response('{"enabled":false,"recoveryCodesRemaining":0}')
+          : new Response('{"status":"ok"}'),
+    );
+  const revocations = () =>
+    request.mock.calls.filter(
+      ([input]) => String(input) === '/api/me/sessions/revoke',
+    );
   render(
     <MemoryRouter initialEntries={['/settings/security']}>
       <Routes>
@@ -42,12 +51,10 @@ it('revokes another session and signs out everywhere through the API', async () 
   await waitFor(() =>
     expect(screen.queryByText('Another session')).not.toBeInTheDocument(),
   );
-  expect(request.mock.calls[1]?.[1]?.body).toBe(
-    JSON.stringify({ id: 'other' }),
-  );
+  expect(revocations()[0]?.[1]?.body).toBe(JSON.stringify({ id: 'other' }));
   await userEvent.click(
     screen.getByRole('button', { name: 'Sign out everywhere' }),
   );
   await screen.findByRole('heading', { name: 'Sign in again' });
-  expect(request.mock.calls[2]?.[1]?.body).toBe('{}');
+  expect(revocations()[1]?.[1]?.body).toBe('{}');
 });

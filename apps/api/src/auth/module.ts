@@ -5,18 +5,28 @@ import { IdentityController, AUTH_SECURE } from './controller.js';
 import { IdentityService } from './service.js';
 import { IdentityMailer } from './mail.js';
 import { IdentityDelivery } from './delivery.js';
+import { MfaService } from './mfa-service.js';
+import { SecretBox } from './mfa.js';
 
 @Module({})
 export class IdentityModule {
   static register(database: Database, environment: Environment): DynamicModule {
+    const identity = new IdentityService(database);
     return {
       module: IdentityModule,
       controllers: [IdentityController],
-      exports: [IdentityService],
+      exports: [IdentityService, MfaService],
       providers: [
+        { provide: IdentityService, useValue: identity },
         {
-          provide: IdentityService,
-          useValue: new IdentityService(database),
+          provide: MfaService,
+          useValue: new MfaService(
+            database,
+            new SecretBox(
+              Buffer.from(environment.MFA_ENCRYPTION_KEY, 'base64'),
+            ),
+            identity,
+          ),
         },
         {
           provide: IdentityDelivery,

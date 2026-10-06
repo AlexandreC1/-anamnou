@@ -40,9 +40,17 @@ model User {
   status UserStatus @default(PENDING)
   role PlatformRole @default(USER)
   emailVerifiedAt DateTime? @db.Timestamptz(3)
+  // TOTP secrets are AES-256-GCM sealed with MFA_ENCRYPTION_KEY, bound to the user ID.
+  mfaSecret String? @db.VarChar(200)
+  mfaEnabledAt DateTime? @db.Timestamptz(3)
+  mfaLastStep Int?
+  mfaPendingSecret String? @db.VarChar(200)
+  mfaPendingExpiresAt DateTime? @db.Timestamptz(3)
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
   sessions Session[]
+  mfaRecoveryCodes MfaRecoveryCode[]
+  mfaChallenges MfaChallenge[]
   tokens IdentityToken[]
   auditLogs AuditLog[]
   emailJobs IdentityEmailJob[]
@@ -60,6 +68,31 @@ model Session {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   lastSeenAt DateTime @default(now()) @db.Timestamptz(3)
   expiresAt DateTime @db.Timestamptz(3)
+  // Set only when this session proved a second factor. Platform privileges require it.
+  mfaVerifiedAt DateTime? @db.Timestamptz(3)
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// One-use codes; only SHA-256 hashes of 80-bit random values are stored.
+model MfaRecoveryCode {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash String @unique @db.Char(64)
+  usedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  @@index([userId])
+}
+
+// Short-lived proof that the password step succeeded; the token is held in an HttpOnly cookie.
+model MfaChallenge {
+  tokenHash String @id @db.Char(64)
+  userId String @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attempts Int @default(0)
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
   @@index([userId])
   @@index([expiresAt])
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { identityRequest } from './identity-api';
 import type { Locale } from './identity-copy';
+import { MfaSettings } from './MfaSettings';
 
 export const securityLabels = {
   en: {
@@ -172,6 +173,7 @@ export function SecuritySettings({ locale }: { locale: Locale }) {
           </button>
         )}
       </div>
+      <MfaSettings locale={locale} />
     </section>
   );
 }

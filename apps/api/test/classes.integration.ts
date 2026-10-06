@@ -69,10 +69,18 @@ before(async () => {
         status: 'ACTIVE',
         emailVerifiedAt: new Date(),
         role: user === platform ? 'PLATFORM_ADMIN' : 'USER',
+        // Platform privileges require an enrolled factor and an MFA-verified session.
+        ...(user === platform
+          ? {
+              mfaSecret: 'v1.fixture-not-a-real-secret',
+              mfaEnabledAt: new Date(),
+            }
+          : {}),
         sessions: {
           create: {
             tokenHash: hashToken(user.token),
             expiresAt: new Date(Date.now() + 600000),
+            mfaVerifiedAt: user === platform ? new Date() : null,
           },
         },
       },

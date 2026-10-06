@@ -15,5 +15,6 @@ export function isolatedEnvironment() {
     STORAGE_BUCKET: 'test-bucket',
     STORAGE_ACCESS_KEY: randomBytes(12).toString('hex'),
     STORAGE_SECRET_KEY: randomBytes(24).toString('hex'),
+    MFA_ENCRYPTION_KEY: randomBytes(32).toString('base64'),
   });
 }

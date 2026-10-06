@@ -37,6 +37,7 @@ export function IdentityForm({ mode, locale }: { mode: Mode; locale: Locale }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
+  const [mfaStep, setMfaStep] = useState(false);
   const delivery = deliveryCopy[locale];
   const [token] = useState(
     () => new URLSearchParams(window.location.hash.slice(1)).get('token') ?? '',
@@ -62,6 +63,27 @@ export function IdentityForm({ mode, locale }: { mode: Mode; locale: Locale }) {
     event.preventDefault();
     if (busy) return;
     const data = new FormData(event.currentTarget);
+    if (mfaStep) {
+      setBusy(true);
+      setError('');
+      try {
+        readAccount(
+          await identityRequest('/auth/mfa', {
+            code: String(data.get('code') ?? '').trim(),
+          }),
+        );
+        navigate('/profile');
+      } catch (caught) {
+        setError(
+          caught instanceof ApiError && caught.status === 401
+            ? t.mfaDenied
+            : errorCopy(caught, locale),
+        );
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
     const email = String(data.get('email') ?? '');
     const password = String(data.get('password') ?? '');
     const body =
@@ -85,6 +107,15 @@ export function IdentityForm({ mode, locale }: { mode: Mode; locale: Locale }) {
     try {
       const result = await identityRequest('/auth/' + mode, body);
       if (mode === 'login') {
+        if (
+          result &&
+          typeof result === 'object' &&
+          'mfaRequired' in result &&
+          result.mfaRequired === true
+        ) {
+          setMfaStep(true);
+          return;
+        }
         readAccount(result);
         navigate('/profile');
       } else setSuccess(true);
@@ -98,8 +129,14 @@ export function IdentityForm({ mode, locale }: { mode: Mode; locale: Locale }) {
     <section className="identity-layout">
       <div className="identity-intro">
         <p className="eyebrow">Anamnou</p>
-        <h1>{success && !tokenMode ? delivery.title : title}</h1>
-        <p className="intro">{t.introduction}</p>
+        <h1>
+          {mfaStep
+            ? t.mfaTitle
+            : success && !tokenMode
+              ? delivery.title
+              : title}
+        </h1>
+        <p className="intro">{mfaStep ? t.mfaIntro : t.introduction}</p>
         <p>{t.privacy}</p>
       </div>
       <div className="identity-panel">
@@ -146,6 +183,31 @@ export function IdentityForm({ mode, locale }: { mode: Mode; locale: Locale }) {
               </>
             )}
           </div>
+        ) : mfaStep ? (
+          <form
+            onSubmit={(event) => void submit(event)}
+            className="account-form"
+            aria-busy={busy}
+          >
+            <label>
+              {t.mfaCode}
+              <input
+                name="code"
+                autoComplete="one-time-code"
+                required
+                minLength={6}
+                maxLength={19}
+                spellCheck={false}
+                autoCapitalize="characters"
+              />
+            </label>
+            {error && (
+              <p ref={message} tabIndex={-1} role="alert">
+                {error}
+              </p>
+            )}
+            <button disabled={busy}>{busy ? t.busy : t.mfaVerify}</button>
+          </form>
         ) : tokenMode && !/^[a-f0-9]{64}$/.test(token) ? (
           <p role="alert">{t.missing}</p>
         ) : (

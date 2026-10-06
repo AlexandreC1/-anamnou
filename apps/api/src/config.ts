@@ -68,6 +68,8 @@ const schema = z
     SMTP_USER: z.string().default(''),
     SMTP_PASSWORD: z.string().default(''),
     MAIL_FROM: z.string().email().default('yearbook@localhost.test'),
+    // Base64-encoded 32-byte key that seals TOTP secrets at rest.
+    MFA_ENCRYPTION_KEY: z.string().regex(/^[A-Za-z0-9+/]{43}=$/),
   })
   .superRefine((value, context) => {
     if (value.APP_ENV === 'production') {

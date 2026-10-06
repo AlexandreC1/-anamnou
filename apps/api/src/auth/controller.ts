@@ -13,10 +13,14 @@ import { ApiBody, ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { IdentityService, publicUser } from './service.js';
+import { MfaService } from './mfa-service.js';
+import { factorSchema } from './mfa.js';
 import {
   cookieName,
   emailSchema,
   localeSchema,
+  MFA_CHALLENGE_MS,
+  mfaCookieName,
   nameSchema,
   parse,
   passwordSchema,
@@ -28,13 +32,27 @@ import {
 export const AUTH_SECURE = Symbol('AUTH_SECURE');
 const emailBody = z.object({ email: emailSchema }).strict();
 const accepted = { status: 'accepted' } as const;
+const factorBody = z.object({ code: factorSchema }).strict();
+const reauthBody = z
+  .object({ password: z.string().min(1).max(128), code: factorSchema })
+  .strict();
 @ApiTags('Identity')
 @Controller()
 export class IdentityController {
   constructor(
     @Inject(IdentityService) private readonly identity: IdentityService,
+    @Inject(MfaService) private readonly mfa: MfaService,
     @Inject(AUTH_SECURE) private readonly secure: boolean,
   ) {}
+  private setSession(response: Response, token: string) {
+    response.cookie(cookieName, token, {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: this.secure,
+      path: '/',
+      maxAge: SESSION_MS,
+    });
+  }
 
   @Post('auth/register')
   @HttpCode(202)
@@ -96,15 +114,56 @@ export class IdentityController {
         .strict(),
       body,
     );
-    const result = await this.identity.login(input.email, input.password);
+    const result = await this.identity.login(
+      input.email,
+      input.password,
+      request.ip ?? '',
+    );
     await this.identity.logout(sessionToken(request.headers.cookie));
-    response.cookie(cookieName, result.token, {
+    if ('challenge' in result) {
+      response.cookie(mfaCookieName, result.challenge, {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: this.secure,
+        path: '/',
+        maxAge: MFA_CHALLENGE_MS,
+      });
+      return { mfaRequired: true };
+    }
+    this.setSession(response, result.token);
+    return result.user;
+  }
+
+  @Post('auth/mfa')
+  @HttpCode(200)
+  @ApiOperation({
+    summary:
+      'Complete sign-in with a six-digit authenticator code or a one-use recovery code.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['code'],
+      properties: { code: { type: 'string', maxLength: 19 } },
+    },
+  })
+  async completeMfa(
+    @Body() body: unknown,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.mfa.completeLogin(
+      sessionToken(request.headers.cookie, mfaCookieName),
+      parse(factorBody, body).code,
+    );
+    response.clearCookie(mfaCookieName, {
       httpOnly: true,
       sameSite: 'strict',
       secure: this.secure,
       path: '/',
-      maxAge: SESSION_MS,
     });
+    this.setSession(response, result.token);
     return result.user;
   }
 
@@ -217,6 +276,62 @@ export class IdentityController {
     return this.identity.revokeSession(
       sessionToken(request.headers.cookie),
       input.id,
+    );
+  }
+
+  @Get('me/mfa')
+  @ApiCookieAuth('session')
+  mfaStatus(@Req() request: Request) {
+    return this.mfa.status(sessionToken(request.headers.cookie));
+  }
+  @Post('me/mfa/setup')
+  @HttpCode(200)
+  @ApiCookieAuth('session')
+  @ApiOperation({
+    summary:
+      'Start authenticator enrollment after password reauthentication. The setup secret expires in ten minutes.',
+  })
+  mfaSetup(@Req() request: Request, @Body() body: unknown) {
+    return this.mfa.setup(
+      sessionToken(request.headers.cookie),
+      parse(z.object({ password: z.string().min(1).max(128) }).strict(), body)
+        .password,
+    );
+  }
+  @Post('me/mfa/enable')
+  @HttpCode(200)
+  @ApiCookieAuth('session')
+  @ApiOperation({
+    summary:
+      'Confirm enrollment with a current code. Returns ten recovery codes once and signs out other sessions.',
+  })
+  mfaEnable(@Req() request: Request, @Body() body: unknown) {
+    return this.mfa.enable(
+      sessionToken(request.headers.cookie),
+      parse(z.object({ code: z.string().regex(/^\d{6}$/) }).strict(), body)
+        .code,
+    );
+  }
+  @Post('me/mfa/disable')
+  @HttpCode(200)
+  @ApiCookieAuth('session')
+  mfaDisable(@Req() request: Request, @Body() body: unknown) {
+    const input = parse(reauthBody, body);
+    return this.mfa.disable(
+      sessionToken(request.headers.cookie),
+      input.password,
+      input.code,
+    );
+  }
+  @Post('me/mfa/recovery-codes')
+  @HttpCode(200)
+  @ApiCookieAuth('session')
+  mfaRecoveryCodes(@Req() request: Request, @Body() body: unknown) {
+    const input = parse(reauthBody, body);
+    return this.mfa.regenerate(
+      sessionToken(request.headers.cookie),
+      input.password,
+      input.code,
     );
   }
 

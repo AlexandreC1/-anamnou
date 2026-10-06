@@ -34,6 +34,13 @@ const en = {
   profileIntro:
     'This is your personal account. Your classes are ready when you are.',
   retry: 'Try again',
+  mfaTitle: 'Enter your verification code',
+  mfaIntro:
+    'Open your authenticator app and enter the six-digit code, or use one of your recovery codes.',
+  mfaCode: 'Verification code',
+  mfaVerify: 'Verify and sign in',
+  mfaDenied:
+    'That code did not work. Check the code, or sign in again if this step has expired.',
   language: 'Preferred email language',
 };
 type IdentityCopy = typeof en;
@@ -74,6 +81,13 @@ export const identityCopy: Record<Locale, IdentityCopy> = {
     missing: 'Louvri lyen ki nan imèl ou a, oswa mande yon nouvo lyen anba a.',
     profileIntro: 'Sa a se kont pèsonèl ou. Klas ou yo pare lè ou pare.',
     retry: 'Eseye ankò',
+    mfaTitle: 'Antre kòd verifikasyon ou',
+    mfaIntro:
+      'Louvri aplikasyon otantifikasyon ou epi antre kòd sis chif la, oswa sèvi ak youn nan kòd rekiperasyon ou yo.',
+    mfaCode: 'Kòd verifikasyon',
+    mfaVerify: 'Verifye epi konekte',
+    mfaDenied:
+      'Kòd sa a pa mache. Verifye kòd la, oswa konekte ankò si etap sa a ekspire.',
     language: 'Lang ou prefere pou imèl',
   },
   fr: {
@@ -113,6 +127,13 @@ export const identityCopy: Record<Locale, IdentityCopy> = {
       'Ouvrez le lien reçu par e-mail ou demandez un nouveau lien ci-dessous.',
     profileIntro: 'Voici votre compte personnel. Vos classes vous attendent.',
     retry: 'Réessayer',
+    mfaTitle: 'Saisissez votre code de vérification',
+    mfaIntro:
+      'Ouvrez votre application d’authentification et saisissez le code à six chiffres, ou utilisez un code de récupération.',
+    mfaCode: 'Code de vérification',
+    mfaVerify: 'Vérifier et se connecter',
+    mfaDenied:
+      'Ce code n’a pas fonctionné. Vérifiez-le, ou reconnectez-vous si cette étape a expiré.',
     language: 'Langue préférée pour les e-mails',
   },
   es: {
@@ -151,6 +172,13 @@ export const identityCopy: Record<Locale, IdentityCopy> = {
     missing: 'Abre el enlace de tu correo o solicita uno nuevo abajo.',
     profileIntro: 'Esta es tu cuenta personal. Tus clases te esperan.',
     retry: 'Intentar de nuevo',
+    mfaTitle: 'Introduce tu código de verificación',
+    mfaIntro:
+      'Abre tu aplicación de autenticación e introduce el código de seis dígitos, o usa uno de tus códigos de recuperación.',
+    mfaCode: 'Código de verificación',
+    mfaVerify: 'Verificar e iniciar sesión',
+    mfaDenied:
+      'Ese código no funcionó. Revísalo o vuelve a iniciar sesión si este paso caducó.',
     language: 'Idioma preferido para los correos',
   },
 };

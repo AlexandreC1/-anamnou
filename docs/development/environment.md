@@ -20,6 +20,11 @@ No session secret exists yet because Phase 0 has no session implementation.
 | STORAGE_BUCKET     | Private bucket name                                             |
 | STORAGE_ACCESS_KEY | Local MinIO root user and S3 credential                         |
 | STORAGE_SECRET_KEY | Local MinIO root password and S3 credential                     |
+| MFA_ENCRYPTION_KEY | Base64 32-byte key sealing TOTP secrets (ADR 0011); back it up  |
+
+Rerunning `npm run setup:env` on an existing .env adds a generated
+MFA_ENCRYPTION_KEY if it is missing and leaves every other value unchanged.
+Changing the key makes enrolled authenticators unusable; users then need recovery codes.
 
 Keep DATABASE_URL consistent with the POSTGRES_* settings.
 Local CLI scripts read root .env. API commands explicitly use ../../.env from the

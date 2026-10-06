@@ -5,7 +5,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Database } from '../database.js';
-import { hashToken, newToken, SESSION_MS } from './security.js';
+import {
+  hashToken,
+  MFA_CHALLENGE_MS,
+  newToken,
+  SESSION_MS,
+} from './security.js';
 import type { User } from '../generated/prisma/client.js';
 import { hashPassword, verifyPassword } from './hashing.js';
 const sharedDummyHash = hashPassword(newToken());
@@ -17,6 +22,7 @@ export const publicUser = (user: User) => ({
   locale: user.locale,
   role: user.role,
   emailVerified: user.emailVerifiedAt !== null,
+  mfaEnabled: user.mfaEnabledAt !== null,
 });
 
 export class IdentityService {
@@ -33,6 +39,11 @@ export class IdentityService {
       RETURNING "count"`;
     if ((rows[0]?.count ?? 11) > 10)
       throw new HttpException('Rate limited', 429);
+  }
+  async clearThrottle(identifier: string, operation: string) {
+    await this.database.authThrottle.deleteMany({
+      where: { key: operation + ':' + hashToken(identifier) },
+    });
   }
 
   async register(input: {
@@ -153,8 +164,10 @@ export class IdentityService {
             ? { status: 'ACTIVE', emailVerifiedAt: new Date() }
             : { passwordHash },
       });
-      if (purpose === 'RESET_PASSWORD')
+      if (purpose === 'RESET_PASSWORD') {
         await tx.session.deleteMany({ where: { userId: user.id } });
+        await tx.mfaChallenge.deleteMany({ where: { userId: user.id } });
+      }
       await tx.auditLog.create({
         data: {
           actorUserId: user.id,
@@ -168,7 +181,12 @@ export class IdentityService {
     });
   }
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string, address: string) {
+    // Counted per account and client address before hashing. An attacker's
+    // address is cut off after ten attempts, including a correct guess, while
+    // the owner signing in from elsewhere is unaffected.
+    const pair = 'login-ip:' + hashToken(address).slice(0, 16);
+    await this.throttle(email, pair);
     const user = await this.database.user.findUnique({ where: { email } });
     const valid = await verifyPassword(
       user?.passwordHash ?? (await this.dummyHash),
@@ -178,24 +196,54 @@ export class IdentityService {
       await this.throttle(email, 'login');
       throw new UnauthorizedException();
     }
-    // An unauthenticated attacker cannot lock out a correctly authenticated user.
-    // IP admission limits and the bounded hasher still apply before this branch.
-    await this.database.authThrottle.deleteMany({
-      where: { key: 'login:' + hashToken(email) },
-    });
-    const token = newToken();
-    await this.database.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${user.id}::uuid FOR UPDATE`;
-      const current = await tx.user.findUniqueOrThrow({
-        where: { id: user.id },
+    await this.clearThrottle(email, pair);
+    await this.clearThrottle(email, 'login');
+    if (user.mfaEnabledAt) {
+      const challenge = newToken();
+      await this.database.mfaChallenge.create({
+        data: {
+          tokenHash: hashToken(challenge),
+          userId: user.id,
+          expiresAt: new Date(Date.now() + MFA_CHALLENGE_MS),
+        },
       });
-      if (
-        current.passwordHash !== user.passwordHash ||
-        current.status !== 'ACTIVE'
-      )
+      return { challenge };
+    }
+    return this.startSession(user.id, user.passwordHash, null);
+  }
+
+  async finishMfaLogin(challengeHash: string, userId: string) {
+    const user = await this.database.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId}::uuid FOR UPDATE`;
+      const consumed = await tx.mfaChallenge.deleteMany({
+        where: {
+          tokenHash: challengeHash,
+          userId,
+          expiresAt: { gt: new Date() },
+        },
+      });
+      if (consumed.count !== 1) throw new UnauthorizedException();
+      return tx.user.findUniqueOrThrow({ where: { id: userId } });
+    });
+    if (!user.mfaEnabledAt) throw new UnauthorizedException();
+    return this.startSession(user.id, user.passwordHash, new Date());
+  }
+
+  private async startSession(
+    userId: string,
+    passwordHash: string,
+    mfaVerifiedAt: Date | null,
+  ) {
+    const token = newToken();
+    const user = await this.database.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId}::uuid FOR UPDATE`;
+      const current = await tx.user.findUniqueOrThrow({
+        where: { id: userId },
+      });
+      if (current.passwordHash !== passwordHash || current.status !== 'ACTIVE')
         throw new UnauthorizedException();
       const oldest = await tx.session.findMany({
-        where: { userId: user.id },
+        where: { userId },
         orderBy: { createdAt: 'desc' },
         skip: 9,
         select: { tokenHash: true },
@@ -208,13 +256,20 @@ export class IdentityService {
       await tx.session.create({
         data: {
           tokenHash: hashToken(token),
-          userId: user.id,
+          userId,
           expiresAt: new Date(Date.now() + SESSION_MS),
+          mfaVerifiedAt,
         },
       });
       await tx.auditLog.create({
-        data: { actorUserId: user.id, targetId: user.id, action: 'auth.login' },
+        data: {
+          actorUserId: userId,
+          targetId: userId,
+          action: 'auth.login',
+          metadata: { mfa: mfaVerifiedAt !== null },
+        },
       });
+      return current;
     });
     return { token, user: publicUser(user) };
   }
@@ -244,6 +299,13 @@ export class IdentityService {
       });
       if (refreshed.count !== 1) throw new UnauthorizedException();
     }
+    // Platform privileges apply only to sessions that proved a second factor.
+    // Without one, the account acts as an ordinary user and can still enroll.
+    if (
+      session.user.role === 'PLATFORM_ADMIN' &&
+      !(session.mfaVerifiedAt && session.user.mfaEnabledAt)
+    )
+      return { ...session.user, role: 'USER' as const };
     return session.user;
   }
 
@@ -320,9 +382,12 @@ export class IdentityService {
     );
   }
   requirePlatformAdmin(user: User) {
-    if (user.role !== 'PLATFORM_ADMIN') throw new ForbiddenException();
+    if (user.role !== 'PLATFORM_ADMIN' || !user.mfaEnabledAt)
+      throw new ForbiddenException();
   }
   async confirmPassword(user: User, password: string) {
+    // Bounded reauthentication guessing with a stolen session.
+    await this.throttle(user.id, 'reauth');
     const current = await this.database.user.findUniqueOrThrow({
       where: { id: user.id },
     });
@@ -331,6 +396,7 @@ export class IdentityService {
       !(await verifyPassword(current.passwordHash, password))
     )
       throw new UnauthorizedException();
+    await this.clearThrottle(user.id, 'reauth');
     return current;
   }
 }

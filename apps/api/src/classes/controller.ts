@@ -14,7 +14,9 @@ import { ApiBody, ApiCookieAuth, ApiTags, ApiQuery } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { z } from 'zod';
 import { IdentityService } from '../auth/service.js';
-import { parse, sessionToken, passwordSchema } from '../auth/security.js';
+import { parse, sessionToken } from '../auth/security.js';
+import { MfaService } from '../auth/mfa-service.js';
+import { factorSchema } from '../auth/mfa.js';
 import { SchoolsService } from './schools.js';
 import { ClassesService } from './service.js';
 import { InvitationsService } from './invitations.js';
@@ -60,6 +62,7 @@ const sizeDocs = () =>
 export class ClassesController {
   constructor(
     @Inject(IdentityService) private readonly identity: IdentityService,
+    @Inject(MfaService) private readonly mfa: MfaService,
     @Inject(SchoolsService) private readonly schools: SchoolsService,
     @Inject(ClassesService) private readonly classes: ClassesService,
     @Inject(InvitationsService)
@@ -129,12 +132,19 @@ export class ClassesController {
         .object({
           verified: z.boolean(),
           reason: z.string().trim().min(20).max(500),
-          password: passwordSchema,
+          password: z.string().min(1).max(128),
+          code: factorSchema,
         })
         .strict(),
       body,
     );
-    const confirmed = await this.identity.confirmPassword(user, input.password);
+    // Step-up: current password and a second factor on an MFA-verified session.
+    await this.mfa.reauthenticate(
+      sessionToken(request.headers.cookie),
+      input.password,
+      input.code,
+    );
+    const confirmed = await this.user(request);
     this.identity.requirePlatformAdmin(confirmed);
     return this.schools.verify(
       confirmed,

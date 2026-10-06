@@ -16,7 +16,12 @@ export async function cleanupIdentity(database: Database, now = new Date()) {
       await tx.$executeRaw`DELETE FROM "IdentityToken" WHERE "tokenHash" IN (SELECT "tokenHash" FROM "IdentityToken" WHERE "expiresAt" < ${now} LIMIT 1000)`;
     const counters =
       await tx.$executeRaw`DELETE FROM "AuthThrottle" WHERE "key" IN (SELECT "key" FROM "AuthThrottle" WHERE "expiresAt" < ${now} LIMIT 1000)`;
-    return { sessions, tokens, counters };
+    const challenges =
+      await tx.$executeRaw`DELETE FROM "MfaChallenge" WHERE "tokenHash" IN (SELECT "tokenHash" FROM "MfaChallenge" WHERE "expiresAt" < ${now} LIMIT 1000)`;
+    // Abandoned authenticator enrollments do not keep a sealed secret.
+    const enrollments =
+      await tx.$executeRaw`UPDATE "User" SET "mfaPendingSecret" = NULL, "mfaPendingExpiresAt" = NULL WHERE "id" IN (SELECT "id" FROM "User" WHERE "mfaPendingExpiresAt" < ${now} LIMIT 1000)`;
+    return { sessions, tokens, counters, challenges, enrollments };
   });
 }
 
