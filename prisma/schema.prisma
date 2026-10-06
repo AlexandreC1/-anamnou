@@ -58,6 +58,9 @@ model User {
   memberships ClassMembership[]
   invitations Invitation[]
   mediaAssets MediaAsset[]
+  governanceGrants GovernanceGrant[] @relation("GovernanceRecipient")
+  requestedGrants GovernanceGrant[] @relation("GovernanceRequester")
+  approvedGrants GovernanceGrant[] @relation("GovernanceApprover")
 }
 
 model Session {
@@ -166,6 +169,8 @@ enum InvitationStatus {
 }
 
 model School {
+  governanceGrants GovernanceGrant[]
+  reviewQueues ReviewQueue[]
   verifiedAt DateTime? @db.Timestamptz(3)
   id String @id @default(uuid()) @db.Uuid
   name String @db.VarChar(120)
@@ -176,6 +181,62 @@ model School {
   admins SchoolAdmin[]
   classes Class[]
   auditLogs AuditLog[]
+}
+
+enum GovernanceRole {
+  QUEUE_MANAGER
+  CONSENT_REVIEWER
+  SAFEGUARDING_REVIEWER
+  PRIVACY_REVIEWER
+  AUDITOR
+}
+
+enum GovernanceGrantStatus {
+  REQUESTED
+  ACTIVE
+  REVOKED
+}
+
+model GovernanceGrant {
+  id String @id @default(uuid()) @db.Uuid
+  schoolId String @db.Uuid
+  userId String @db.Uuid
+  requestedById String @db.Uuid
+  approvedById String? @db.Uuid
+  school School @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  user User @relation("GovernanceRecipient", fields: [userId], references: [id], onDelete: Restrict)
+  requestedBy User @relation("GovernanceRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+  approvedBy User? @relation("GovernanceApprover", fields: [approvedById], references: [id], onDelete: Restrict)
+  role GovernanceRole
+  status GovernanceGrantStatus @default(REQUESTED)
+  expiresAt DateTime @db.Timestamptz(3)
+  approvedAt DateTime? @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  primaryQueues ReviewQueue[] @relation("QueuePrimary")
+  backupQueues ReviewQueue[] @relation("QueueBackup")
+  @@unique([id, schoolId, userId])
+  @@index([schoolId, status, role])
+  @@index([userId, expiresAt])
+}
+
+model ReviewQueue {
+  id String @id @default(uuid()) @db.Uuid
+  schoolId String @db.Uuid
+  school School @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  name String @db.VarChar(120)
+  role GovernanceRole
+  primaryGrantId String @db.Uuid
+  primaryUserId String @db.Uuid
+  backupGrantId String @db.Uuid
+  backupUserId String @db.Uuid
+  primaryGrant GovernanceGrant @relation("QueuePrimary", fields: [primaryGrantId, schoolId, primaryUserId], references: [id, schoolId, userId], onDelete: Restrict)
+  backupGrant GovernanceGrant @relation("QueueBackup", fields: [backupGrantId, schoolId, backupUserId], references: [id, schoolId, userId], onDelete: Restrict)
+  version Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  @@unique([schoolId, name])
+  @@index([schoolId, role])
 }
 
 model SchoolAdmin {

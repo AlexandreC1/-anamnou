@@ -15,6 +15,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import express from 'express';
 import { IdentityModule } from './auth/module.js';
+import { GovernanceModule } from './governance/module.js';
 import { ClassesModule } from './classes/module.js';
 import { PublicationModule } from './publication/module.js';
 import { MediaService } from './publication/media.js';
@@ -57,6 +58,7 @@ class FoundationModule {
       module: FoundationModule,
       imports: [
         identity,
+        GovernanceModule.register(database, identity),
         ClassesModule.register(
           database,
           identity,
