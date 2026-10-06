@@ -11,14 +11,17 @@ export async function cleanupMedia(
   const candidates = await database.mediaAsset.findMany({
     where: {
       OR: [
-        { status: { in: ['PENDING', 'UPLOADED'] }, expiresAt: { lt: now } },
+        {
+          status: { in: ['PENDING', 'PROCESSING', 'UPLOADED'] },
+          expiresAt: { lt: now },
+        },
         {
           status: 'READY',
           createdAt: { lt: abandonedBefore },
           profiles: { none: {} },
           sectionMedia: { none: {} },
         },
-        { status: 'DELETED' },
+        { status: 'DELETED', purgedAt: null },
       ],
     },
     orderBy: { updatedAt: 'asc' },
@@ -26,7 +29,7 @@ export async function cleanupMedia(
   });
   let cleaned = 0;
   for (const candidate of candidates) {
-    await database.$transaction(async (tx) => {
+    const deletion = await database.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT "id" FROM "Class" WHERE "id" = ${candidate.classId}::uuid FOR UPDATE`;
       const asset = await tx.mediaAsset.findUnique({
         where: { id: candidate.id },
@@ -39,7 +42,7 @@ export async function cleanupMedia(
           : asset.status !== 'DELETED' && asset.expiresAt >= now
       )
         return;
-      await storage.delete(asset.storageKey);
+      if (asset.purgedAt) return;
       await tx.mediaAsset.update({
         where: { id: asset.id },
         data: { status: 'DELETED', updatedAt: now },
@@ -59,8 +62,20 @@ export async function cleanupMedia(
           },
         });
       }
-      cleaned++;
+      return { key: asset.storageKey, updatedAt: now };
     });
+    if (!deletion) continue;
+    await storage.delete(deletion.key);
+    await database.mediaAsset.updateMany({
+      where: {
+        id: candidate.id,
+        status: 'DELETED',
+        purgedAt: null,
+        updatedAt: deletion.updatedAt,
+      },
+      data: { purgedAt: now },
+    });
+    cleaned++;
   }
   return cleaned;
 }

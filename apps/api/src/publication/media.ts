@@ -43,12 +43,29 @@ export class MediaService {
           where: {
             classId: input.classId,
             ownerUserId: user.id,
-            status: { in: ['PENDING', 'UPLOADED'] },
+            status: { in: ['PENDING', 'PROCESSING', 'UPLOADED'] },
             expiresAt: { gt: new Date() },
           },
         });
         if (pending >= 10)
           throw new HttpException('Too many unfinished uploads.', 429);
+        // Class row locks serialize concurrent quota reservations across replicas.
+        const [quota] = await tx.$queryRaw<
+          { ownBytes: bigint; totalBytes: bigint }[]
+        >`
+          SELECT COALESCE(SUM(GREATEST("declaredSize", COALESCE("size", 0))) FILTER (WHERE "ownerUserId" = ${user.id}::uuid), 0)::bigint AS "ownBytes",
+          COALESCE(SUM(GREATEST("declaredSize", COALESCE("size", 0))), 0)::bigint AS "totalBytes"
+          FROM "MediaAsset" WHERE "classId" = ${input.classId}::uuid AND "status" != 'DELETED'`;
+        const ownBytes = Number(quota?.ownBytes ?? 0);
+        const totalBytes = Number(quota?.totalBytes ?? 0);
+        if (
+          ownBytes + input.size > 128 * 1024 * 1024 ||
+          totalBytes + input.size > 1024 * 1024 * 1024
+        )
+          throw new HttpException(
+            'Storage allowance reached. Delete unused photos before uploading.',
+            413,
+          );
         const id = randomUUID();
         const asset = await tx.mediaAsset.create({
           data: {
@@ -110,7 +127,7 @@ export class MediaService {
     } finally {
       this.decoding--;
     }
-    return this.access.withClass(
+    await this.access.withClass(
       asset.classId,
       user,
       true,
@@ -126,21 +143,56 @@ export class MediaService {
           throw new NotFoundException();
         if (current.status !== 'PENDING' || current.expiresAt <= new Date())
           throw new ConflictException();
-        await this.storage.put(asset.storageKey, normalized.data, 'image/webp');
-        return view(
-          await tx.mediaAsset.update({
-            where: { id },
-            data: {
-              status: 'UPLOADED',
-              size: normalized.data.length,
-              width: normalized.info.width,
-              height: normalized.info.height,
-            },
-          }),
-        );
+        await tx.mediaAsset.update({
+          where: { id },
+          data: { status: 'PROCESSING' },
+        });
       },
       false,
     );
+    try {
+      await this.storage.put(asset.storageKey, normalized.data, 'image/webp');
+      return await this.access.withClass(
+        asset.classId,
+        user,
+        true,
+        async (tx, scope) => {
+          const current = await tx.mediaAsset.findUniqueOrThrow({
+            where: { id },
+          });
+          if (
+            scope.guest ||
+            current.ownerUserId !== user.id ||
+            (current.purpose === 'YEARBOOK' && !scope.admin)
+          )
+            throw new NotFoundException();
+          if (
+            current.status !== 'PROCESSING' ||
+            current.expiresAt <= new Date()
+          )
+            throw new ConflictException();
+          return view(
+            await tx.mediaAsset.update({
+              where: { id },
+              data: {
+                status: 'UPLOADED',
+                size: normalized.data.length,
+                width: normalized.info.width,
+                height: normalized.info.height,
+              },
+            }),
+          );
+        },
+        false,
+      );
+    } catch (error) {
+      // Retire failed leases. Cleanup retries deletion without risking committed content.
+      await this.access.database.mediaAsset.updateMany({
+        where: { id, status: { in: ['PROCESSING', 'DELETED'] } },
+        data: { status: 'DELETED', purgedAt: null, updatedAt: new Date() },
+      });
+      throw error;
+    }
   }
   async complete(user: User, id: string) {
     const asset = await this.locate(id);
@@ -180,7 +232,7 @@ export class MediaService {
   }
   async content(user: User, id: string) {
     const asset = await this.locate(id);
-    return this.access.withClass(
+    const key = await this.access.withClass(
       asset.classId,
       user,
       false,
@@ -203,9 +255,38 @@ export class MediaService {
             : scope.admin ||
               (await tx.yearbookSectionMedia.count({ where: { assetId: id } }));
         if (!owner && !shared) throw new NotFoundException();
-        return Buffer.from(await this.storage.get(current.storageKey));
+        return current.storageKey;
       },
     );
+    // Storage reads do not hold a class/database lock. Recheck after I/O so
+    // removal or privacy changes during a download cannot expose stale content.
+    const bytes = Buffer.from(await this.storage.get(key));
+    await this.access.withClass(
+      asset.classId,
+      user,
+      false,
+      async (tx, scope) => {
+        const current = await tx.mediaAsset.findUniqueOrThrow({
+          where: { id },
+        });
+        if (scope.guest || current.status !== 'READY')
+          throw new NotFoundException();
+        const shared =
+          current.purpose === 'PROFILE'
+            ? await tx.profile.count({
+                where: {
+                  photoAssetId: id,
+                  visibility: 'CLASS',
+                  membership: { status: 'ACTIVE', role: { not: 'GUEST' } },
+                },
+              })
+            : scope.admin ||
+              (await tx.yearbookSectionMedia.count({ where: { assetId: id } }));
+        if (current.ownerUserId !== user.id && !shared)
+          throw new NotFoundException();
+      },
+    );
+    return bytes;
   }
   async remove(user: User, id: string, expectedProfileVersion?: number) {
     const asset = await this.locate(id);

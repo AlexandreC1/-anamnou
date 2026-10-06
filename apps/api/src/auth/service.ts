@@ -4,15 +4,11 @@ import {
   HttpException,
   UnauthorizedException,
 } from '@nestjs/common';
-import * as argon2 from 'argon2';
 import type { Database } from '../database.js';
-import {
-  hashToken,
-  newToken,
-  passwordOptions,
-  SESSION_MS,
-} from './security.js';
+import { hashToken, newToken, SESSION_MS } from './security.js';
 import type { User } from '../generated/prisma/client.js';
+import { hashPassword, verifyPassword } from './hashing.js';
+const sharedDummyHash = hashPassword(newToken());
 
 export const publicUser = (user: User) => ({
   id: user.id,
@@ -24,7 +20,7 @@ export const publicUser = (user: User) => ({
 });
 
 export class IdentityService {
-  private readonly dummyHash = argon2.hash(newToken(), passwordOptions);
+  private readonly dummyHash = sharedDummyHash;
   constructor(private readonly database: Database) {}
 
   async throttle(email: string, operation: string) {
@@ -46,7 +42,7 @@ export class IdentityService {
     locale: string;
   }) {
     await this.throttle(input.email, 'register');
-    const passwordHash = await argon2.hash(input.password, passwordOptions);
+    const passwordHash = await hashPassword(input.password);
     // Unique insert avoids racing registration and never changes an existing password.
     await this.database.$transaction(async (tx) => {
       const result = await tx.user.createMany({
@@ -98,7 +94,12 @@ export class IdentityService {
     await this.database.identityEmailJob.upsert({
       where: { userId_purpose: { userId: user.id, purpose } },
       create: { userId: user.id, purpose },
-      update: { nextAttemptAt: new Date(), attempts: 0 },
+      update: {
+        nextAttemptAt: new Date(),
+        attempts: 0,
+        leaseId: null,
+        failedAt: null,
+      },
     });
   }
 
@@ -107,9 +108,20 @@ export class IdentityService {
     purpose: 'VERIFY_EMAIL' | 'RESET_PASSWORD',
     password?: string,
   ) {
-    const passwordHash = password
-      ? await argon2.hash(password, passwordOptions)
-      : undefined;
+    // Reject nonexistent/expired/purpose-mismatched tokens before expensive work.
+    // The transaction below rechecks and consumes the token atomically.
+    const eligible = await this.database.identityToken.findUnique({
+      where: { tokenHash: hashToken(token) },
+      include: { user: { select: { status: true } } },
+    });
+    if (
+      !eligible ||
+      eligible.purpose !== purpose ||
+      eligible.expiresAt <= new Date() ||
+      eligible.user.status === 'DISABLED'
+    )
+      throw new BadRequestException();
+    const passwordHash = password ? await hashPassword(password) : undefined;
     await this.database.$transaction(async (tx) => {
       const record = await tx.identityToken.findUnique({
         where: { tokenHash: hashToken(token) },
@@ -157,14 +169,20 @@ export class IdentityService {
   }
 
   async login(email: string, password: string) {
-    await this.throttle(email, 'login');
     const user = await this.database.user.findUnique({ where: { email } });
-    const valid = await argon2.verify(
+    const valid = await verifyPassword(
       user?.passwordHash ?? (await this.dummyHash),
       password,
     );
-    if (!user || !valid || user.status !== 'ACTIVE')
+    if (!user || !valid || user.status !== 'ACTIVE') {
+      await this.throttle(email, 'login');
       throw new UnauthorizedException();
+    }
+    // An unauthenticated attacker cannot lock out a correctly authenticated user.
+    // IP admission limits and the bounded hasher still apply before this branch.
+    await this.database.authThrottle.deleteMany({
+      where: { key: 'login:' + hashToken(email) },
+    });
     const token = newToken();
     await this.database.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${user.id}::uuid FOR UPDATE`;
@@ -176,6 +194,17 @@ export class IdentityService {
         current.status !== 'ACTIVE'
       )
         throw new UnauthorizedException();
+      const oldest = await tx.session.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+        skip: 9,
+        select: { tokenHash: true },
+      });
+      await tx.session.deleteMany({
+        where: {
+          tokenHash: { in: oldest.map((session) => session.tokenHash) },
+        },
+      });
       await tx.session.create({
         data: {
           tokenHash: hashToken(token),
@@ -199,11 +228,68 @@ export class IdentityService {
     if (
       !session ||
       session.expiresAt <= new Date() ||
+      session.lastSeenAt.getTime() <
+        Date.now() -
+          (session.user.role === 'PLATFORM_ADMIN'
+            ? 60 * 60_000
+            : 24 * 60 * 60_000) ||
       session.user.status !== 'ACTIVE' ||
       !session.user.emailVerifiedAt
     )
       throw new UnauthorizedException();
+    if (session.lastSeenAt.getTime() < Date.now() - 5 * 60_000) {
+      const refreshed = await this.database.session.updateMany({
+        where: { tokenHash: session.tokenHash, expiresAt: { gt: new Date() } },
+        data: { lastSeenAt: new Date() },
+      });
+      if (refreshed.count !== 1) throw new UnauthorizedException();
+    }
     return session.user;
+  }
+
+  async sessions(token: string | null) {
+    const user = await this.authenticate(token);
+    const rows = await this.database.session.findMany({
+      where: {
+        userId: user.id,
+        expiresAt: { gt: new Date() },
+        lastSeenAt: {
+          gt: new Date(
+            Date.now() -
+              (user.role === 'PLATFORM_ADMIN' ? 1 : 24) * 60 * 60_000,
+          ),
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: {
+        id: true,
+        createdAt: true,
+        expiresAt: true,
+        lastSeenAt: true,
+        tokenHash: true,
+      },
+    });
+    return rows.map(({ tokenHash, ...session }) => ({
+      ...session,
+      current: tokenHash === hashToken(token!),
+    }));
+  }
+  async revokeSession(token: string | null, id?: string) {
+    const user = await this.authenticate(token);
+    await this.database.$transaction(async (tx) => {
+      await tx.session.deleteMany({
+        where: { userId: user.id, ...(id ? { id } : {}) },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorUserId: user.id,
+          targetId: user.id,
+          action: id ? 'auth.session_revoke' : 'auth.sessions_revoke_all',
+        },
+      });
+    });
+    return { status: 'ok' };
   }
 
   async logout(token: string | null) {
@@ -235,5 +321,16 @@ export class IdentityService {
   }
   requirePlatformAdmin(user: User) {
     if (user.role !== 'PLATFORM_ADMIN') throw new ForbiddenException();
+  }
+  async confirmPassword(user: User, password: string) {
+    const current = await this.database.user.findUniqueOrThrow({
+      where: { id: user.id },
+    });
+    if (
+      current.status !== 'ACTIVE' ||
+      !(await verifyPassword(current.passwordHash, password))
+    )
+      throw new UnauthorizedException();
+    return current;
   }
 }

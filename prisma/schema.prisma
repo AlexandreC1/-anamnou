@@ -53,10 +53,12 @@ model User {
 }
 
 model Session {
+  id String @unique @default(uuid()) @db.Uuid
   tokenHash String @id @db.Char(64)
   userId String @db.Uuid
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now()) @db.Timestamptz(3)
+  lastSeenAt DateTime @default(now()) @db.Timestamptz(3)
   expiresAt DateTime @db.Timestamptz(3)
   @@index([userId])
   @@index([expiresAt])
@@ -105,6 +107,8 @@ model IdentityEmailJob {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   purpose TokenPurpose
   attempts Int @default(0)
+  leaseId String? @db.Uuid
+  failedAt DateTime? @db.Timestamptz(3)
   nextAttemptAt DateTime @default(now()) @db.Timestamptz(3)
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   @@unique([userId, purpose])
@@ -129,6 +133,7 @@ enum InvitationStatus {
 }
 
 model School {
+  verifiedAt DateTime? @db.Timestamptz(3)
   id String @id @default(uuid()) @db.Uuid
   name String @db.VarChar(120)
   slug String @unique @db.VarChar(80)
@@ -228,6 +233,7 @@ enum MediaPurpose {
 
 enum MediaStatus {
   PENDING
+  PROCESSING
   UPLOADED
   READY
   DELETED
@@ -279,6 +285,7 @@ model MediaAsset {
   storageKey String @unique @db.VarChar(200)
   declaredType String @db.VarChar(40)
   declaredSize Int
+  purgedAt DateTime? @db.Timestamptz(3)
   size Int?
   width Int?
   height Int?

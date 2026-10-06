@@ -12,6 +12,7 @@ export class ClassesModule {
     database: Database,
     identity: DynamicModule,
     webUrl: string,
+    requireVerifiedSchool = false,
   ): DynamicModule {
     const access = new ClassAccess(database);
     return {
@@ -23,7 +24,11 @@ export class ClassesModule {
         { provide: ClassesService, useValue: new ClassesService(access) },
         {
           provide: InvitationsService,
-          useValue: new InvitationsService(access, webUrl),
+          useValue: new InvitationsService(
+            access,
+            webUrl,
+            requireVerifiedSchool,
+          ),
         },
       ],
     };

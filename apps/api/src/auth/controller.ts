@@ -204,6 +204,22 @@ export class IdentityController {
     );
   }
 
+  @Get('me/sessions')
+  @ApiCookieAuth('session')
+  sessions(@Req() request: Request) {
+    return this.identity.sessions(sessionToken(request.headers.cookie));
+  }
+  @Post('me/sessions/revoke')
+  @HttpCode(200)
+  @ApiCookieAuth('session')
+  revokeSession(@Req() request: Request, @Body() body: unknown) {
+    const input = parse(z.object({ id: z.uuid().optional() }).strict(), body);
+    return this.identity.revokeSession(
+      sessionToken(request.headers.cookie),
+      input.id,
+    );
+  }
+
   @Patch('me')
   @ApiCookieAuth('session')
   @ApiBody({

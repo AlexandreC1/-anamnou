@@ -6,6 +6,7 @@ import { yearbookCopy } from './yearbook-copy';
 import type { Yearbook, ReaderMember } from './yearbook-api';
 import { EditionCover } from './EditionCover';
 import { Photo } from './PhotoUpload';
+import { SchoolVerification } from './SchoolVerification';
 
 export function ClassDashboard({
   klass,
@@ -21,6 +22,10 @@ export function ClassDashboard({
       <div className="dashboard-opening">
         <div>
           <h1>{klass.name}</h1>
+          <SchoolVerification
+            verifiedAt={klass.school.verifiedAt}
+            locale={locale}
+          />
           <p className="intro">{klass.motto || t.contribute}</p>
           {klass.permissions.directory && (
             <div className="dashboard-primary">

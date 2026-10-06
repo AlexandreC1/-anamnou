@@ -31,6 +31,8 @@ import {
 import { S3ObjectStorage, type ObjectStorage } from './storage.js';
 import { SafeErrorFilter } from './errors.js';
 import { ANALYTICS, LocalAnalytics, type Analytics } from './analytics.js';
+import { Maintenance } from './maintenance.js';
+import { DatabaseRateLimitStore } from './rate-limits.js';
 
 class ResourceLifecycle implements OnApplicationShutdown {
   constructor(
@@ -55,7 +57,12 @@ class FoundationModule {
       module: FoundationModule,
       imports: [
         identity,
-        ClassesModule.register(database, identity, environment.PUBLIC_WEB_URL),
+        ClassesModule.register(
+          database,
+          identity,
+          environment.PUBLIC_WEB_URL,
+          environment.APP_ENV === 'production',
+        ),
         PublicationModule.register(database, storage, identity),
       ],
       controllers: [HealthController],
@@ -64,6 +71,7 @@ class FoundationModule {
         { provide: DATABASE, useValue: database },
         { provide: STORAGE, useValue: storage },
         { provide: ANALYTICS, useValue: analytics },
+        { provide: Maintenance, useValue: new Maintenance(database, storage) },
         {
           provide: ResourceLifecycle,
           useValue: new ResourceLifecycle(database, storage),
@@ -88,6 +96,11 @@ export async function createApp(environment: Environment) {
     { logger, bodyParser: false },
   );
   app.enableShutdownHooks();
+  if (environment.TRUST_PROXY_CIDRS.length)
+    app
+      .getHttpAdapter()
+      .getInstance()
+      .set('trust proxy', environment.TRUST_PROXY_CIDRS);
   app.use((request: Request, response: Response, next: NextFunction) => {
     const requestId = randomUUID();
     const started = performance.now();
@@ -141,8 +154,26 @@ export async function createApp(environment: Environment) {
     next();
   });
   app.use(
+    '/health',
+    rateLimit({
+      windowMs: 60_000,
+      limit: 120,
+      standardHeaders: 'draft-8',
+      legacyHeaders: false,
+      handler: (_request, response) =>
+        response.status(429).json({
+          statusCode: 429,
+          message: 'Too many requests. Please try again later.',
+          requestId: response.getHeader('x-request-id'),
+        }),
+    }),
+  );
+  app.use(
     '/auth',
     rateLimit({
+      ...(environment.APP_ENV !== 'test'
+        ? { store: new DatabaseRateLimitStore(database, 'rate-auth', 60_000) }
+        : {}),
       windowMs: 60000,
       limit: 60,
       standardHeaders: 'draft-8',
@@ -157,6 +188,11 @@ export async function createApp(environment: Environment) {
   );
   app.use(
     rateLimit({
+      ...(environment.APP_ENV !== 'test'
+        ? { store: new DatabaseRateLimitStore(database, 'rate-global', 60_000) }
+        : {}),
+      // Process liveness must remain independent of database availability.
+      skip: (request) => request.path === '/health',
       windowMs: 60_000,
       limit: 120,
       standardHeaders: 'draft-8',

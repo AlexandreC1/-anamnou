@@ -18,6 +18,8 @@
     "media:cleanup": "tsx scripts/cleanup-media.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
+    "db:backup": "node scripts/database-backup.mjs create",
+    "db:restore:test": "node scripts/database-backup.mjs restore-test",
     "db:dev": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
@@ -55,8 +57,11 @@
   },
   "overrides": {
     "mysql2": "3.24.4",
-    "multer": "2.3.0",
-    "deepmerge-ts": "8.0.2"
+    "multer": "2.4.0",
+    "deepmerge-ts": "8.0.2",
+    "xcode": {
+      "uuid": "11.1.1"
+    }
   },
   "scarfSettings": {
     "enabled": false

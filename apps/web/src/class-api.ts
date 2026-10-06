@@ -8,6 +8,7 @@ export type School = {
   name: string;
   slug: string;
   location: string | null;
+  verifiedAt?: string | null;
 };
 export type ClassSummary = {
   id: string;
@@ -16,7 +17,7 @@ export type ClassSummary = {
   schoolId: string;
   graduationYear: number;
   motto: string | null;
-  school: { name: string };
+  school: { name: string; verifiedAt?: string | null };
 };
 export type ClassDetail = ClassSummary & {
   permissions: { manage: boolean; directory: boolean; contribute: boolean };

@@ -37,7 +37,10 @@ env.ANDROID_HOME ??=
     ? join(process.env.LOCALAPPDATA, 'Android', 'Sdk')
     : process.env.ANDROID_SDK_ROOT;
 const studioJava = 'C:/Program Files/Android/Android Studio/jbr';
-if (process.platform === 'win32' && existsSync(join(studioJava, 'bin', 'java.exe')))
+if (
+  process.platform === 'win32' &&
+  existsSync(join(studioJava, 'bin', 'java.exe'))
+)
   env.JAVA_HOME = studioJava;
 else if (env.JAVA_HOME && !existsSync(join(env.JAVA_HOME, 'bin', 'java.exe')))
   delete env.JAVA_HOME;
@@ -47,7 +50,7 @@ if (env.JAVA_HOME)
   env[pathKey] =
     join(env.JAVA_HOME, 'bin') +
     (process.platform === 'win32' ? ';' : ':') +
-      (env[pathKey] ?? '');
+    (env[pathKey] ?? '');
 
 function run(executable, args, cwd = root, capture = false) {
   const result = spawnSync(executable, args, {

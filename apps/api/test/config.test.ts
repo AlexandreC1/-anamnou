@@ -16,6 +16,7 @@ test('environment rejects missing variables without exposing input values', () =
 test('environment rejects out-of-range ports and non-HTTP storage endpoints', () => {
   const valid = {
     ...isolatedEnvironment(),
+    TRUST_PROXY_CIDRS: '',
     API_PORT: '4000',
     SMTP_PORT: '1025',
   };
@@ -33,6 +34,7 @@ test('environment rejects out-of-range ports and non-HTTP storage endpoints', ()
 test('production environment requires HTTPS and explicit secrets', () => {
   const valid = {
     ...isolatedEnvironment(),
+    TRUST_PROXY_CIDRS: '',
     API_PORT: '4000',
     SMTP_PORT: '587',
     APP_ENV: 'production',

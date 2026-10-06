@@ -1,4 +1,23 @@
 /* Anamnou Prism: colorful objects on a quiet, readable canvas. */
+.school-verification {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.session-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 18px;
+}
+.session-row p {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
 :root {
   --ink: oklch(25% 0.035 305);
   --accent: oklch(49% 0.19 29);

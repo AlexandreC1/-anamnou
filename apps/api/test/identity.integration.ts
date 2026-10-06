@@ -379,7 +379,7 @@ test('SMTP failure keeps a durable job and delivery resumes after API restart', 
       const job = await database.identityEmailJob.findFirst({
         where: { user: { email: f.email } },
       });
-      if (job && job.attempts > 0) break;
+      if (job && job.attempts > 0 && job.leaseId === null) break;
       await setTimeout(100);
     }
     const job = await database.identityEmailJob.findFirstOrThrow({
@@ -455,3 +455,47 @@ test('invalid JSON, body size, content type and per-IP request limits are enforc
 });
 
 test.after(async () => database.$disconnect());
+
+test('failed logins cannot lock out the owner; sessions are private and revocable', async () => {
+  const f = await fixture();
+  const other = await fixture();
+  try {
+    await f.verify();
+    await other.verify();
+    const first = await f.login();
+    const second = await f.login();
+    const foreign = await other.login();
+    for (let index = 0; index < 11; index++) {
+      const response = await f.call('/auth/login', {
+        email: f.email,
+        password: 'incorrect',
+      });
+      assert.equal(response.status, index < 10 ? 401 : 429);
+    }
+    const current = await f.login();
+    const list = await f.call('/me/sessions', undefined, current);
+    assert.equal(list.status, 200);
+    const sessions = (await list.json()) as { id: string; current: boolean }[];
+    assert.equal(sessions.length, 3);
+    assert.equal(sessions.filter((session) => session.current).length, 1);
+    assert.ok(sessions.every((session) => !('tokenHash' in session)));
+    const victim = sessions.find((session) => !session.current)!;
+    assert.equal(
+      (await other.call('/me/sessions/revoke', { id: victim.id }, foreign))
+        .status,
+      200,
+    );
+    assert.equal((await f.call('/me', undefined, first)).status, 200);
+    assert.equal((await f.call('/me', undefined, second)).status, 200);
+    assert.equal(
+      (await f.call('/me/sessions/revoke', {}, current)).status,
+      200,
+    );
+    for (const cookie of [first, second, current])
+      assert.equal((await f.call('/me', undefined, cookie)).status, 401);
+    assert.equal((await other.call('/me', undefined, foreign)).status, 200);
+  } finally {
+    await f.close();
+    await other.close();
+  }
+});

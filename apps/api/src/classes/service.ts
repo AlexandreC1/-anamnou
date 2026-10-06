@@ -1,4 +1,8 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  NotFoundException,
+  HttpException,
+} from '@nestjs/common';
 import type { z } from 'zod';
 import type { User } from '../generated/prisma/client.js';
 import { ClassAccess, audit } from './access.js';
@@ -18,6 +22,8 @@ export class ClassesService {
   create(user: User, input: z.infer<typeof classInput>) {
     return this.access.database.$transaction(async (tx) => {
       await this.access.school(tx, input.schoolId, user, true);
+      if ((await tx.class.count({ where: { schoolId: input.schoolId } })) >= 50)
+        throw new HttpException('Class workspace allowance reached.', 429);
       const klass = await tx.class.create({
         data: {
           ...input,
@@ -42,7 +48,7 @@ export class ClassesService {
                 { school: { admins: { some: { userId: user.id } } } },
               ],
             },
-      include: { school: { select: { name: true } } },
+      include: { school: { select: { name: true, verifiedAt: true } } },
       orderBy: { id: 'asc' },
       ...pageQuery(page),
     });
@@ -52,7 +58,7 @@ export class ClassesService {
     return this.access.withClass(id, user, false, async (tx, access) => ({
       ...(await tx.class.findUniqueOrThrow({
         where: { id },
-        include: { school: { select: { name: true } } },
+        include: { school: { select: { name: true, verifiedAt: true } } },
       })),
       permissions: {
         manage: access.admin,

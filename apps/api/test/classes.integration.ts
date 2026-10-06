@@ -507,3 +507,49 @@ test('concurrent administrator demotions preserve one active class administrator
     1,
   );
 });
+
+test('production invitations require school approval and school identity edits revoke it', async () => {
+  const { InvitationsService } = await import('../src/classes/invitations.js');
+  const { SchoolsService } = await import('../src/classes/schools.js');
+  const { ClassAccess } = await import('../src/classes/access.js');
+  const access = new ClassAccess(db);
+  const invitations = new InvitationsService(access, env.PUBLIC_WEB_URL, true);
+  const schools = new SchoolsService(access);
+  const owner = await db.user.findUniqueOrThrow({ where: { id: admin.id } });
+  const reviewer = await db.user.findUniqueOrThrow({
+    where: { id: platform.id },
+  });
+  const input = { role: 'MEMBER' as const, maxUses: 1, expiresInDays: 1 };
+  await assert.rejects(
+    invitations.create(owner, classId, input),
+    /School approval/,
+  );
+  await assert.rejects(
+    async () =>
+      schools.verify(
+        owner,
+        schoolId,
+        true,
+        'Reviewed institutional ownership evidence.',
+      ),
+    /Forbidden/,
+  );
+  await schools.verify(
+    reviewer,
+    schoolId,
+    true,
+    'Reviewed institutional ownership evidence.',
+  );
+  const approved = await invitations.create(owner, classId, input);
+  await schools.update(owner, schoolId, {
+    name: 'Renamed school requiring review',
+  });
+  assert.equal(
+    (await db.school.findUniqueOrThrow({ where: { id: schoolId } })).verifiedAt,
+    null,
+  );
+  await assert.rejects(
+    invitations.accept(owner, approved.code),
+    /School approval/,
+  );
+});

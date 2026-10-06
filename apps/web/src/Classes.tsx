@@ -11,6 +11,7 @@ import {
 import { LoadState, Pagination, ResourceForm, TextField } from './ClassCommon';
 import type { Locale } from './identity-copy';
 import { ClassDashboard } from './ClassDashboard';
+import { SchoolVerification } from './SchoolVerification';
 
 export function ClassesHome({ locale }: { locale: Locale }) {
   const t = classCopy[locale];
@@ -40,6 +41,10 @@ export function ClassesHome({ locale }: { locale: Locale }) {
                     <p className="eyebrow">
                       {klass.school.name} · {klass.graduationYear}
                     </p>
+                    <SchoolVerification
+                      verifiedAt={klass.school.verifiedAt}
+                      locale={locale}
+                    />
                     <h2>
                       <Link to={'/classes/' + klass.id}>{klass.name}</Link>
                     </h2>

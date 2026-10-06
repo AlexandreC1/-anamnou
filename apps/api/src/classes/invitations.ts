@@ -7,7 +7,7 @@ import {
 import type { z } from 'zod';
 import type { User } from '../generated/prisma/client.js';
 import { hashToken } from '../auth/security.js';
-import { ClassAccess, audit } from './access.js';
+import { ClassAccess, audit, type Transaction } from './access.js';
 import {
   pageQuery,
   pageResult,
@@ -28,9 +28,22 @@ export class InvitationsService {
   constructor(
     private readonly access: ClassAccess,
     private readonly webUrl: string,
+    private readonly requireVerifiedSchool = false,
   ) {}
+  private async checkSchool(tx: Transaction, schoolId: string) {
+    if (!this.requireVerifiedSchool) return;
+    await tx.$queryRaw`SELECT "id" FROM "School" WHERE "id" = ${schoolId}::uuid FOR SHARE`;
+    const school = await tx.school.findUniqueOrThrow({
+      where: { id: schoolId },
+    });
+    if (!school.verifiedAt)
+      throw new ForbiddenException(
+        'School approval is required before inviting members.',
+      );
+  }
   create(user: User, classId: string, input: z.infer<typeof invitationInput>) {
     return this.access.withClass(classId, user, true, async (tx, access) => {
+      await this.checkSchool(tx, access.schoolId);
       const code = randomBytes(16).toString('hex');
       const invitation = await tx.invitation.create({
         data: {
@@ -102,6 +115,7 @@ export class InvitationsService {
         where: { id: found.id },
         include: { class: true },
       });
+      await this.checkSchool(tx, invitation.class.schoolId);
       const existing = await tx.classMembership.findUnique({
         where: { classId_userId: { classId: found.classId, userId: user.id } },
       });

@@ -5,7 +5,8 @@ import { test as base, expect } from '@playwright/test';
 export const test = base.extend<{ apiWindow: void }>({
   apiWindow: [
     async ({ request }, use) => {
-      const response = await request.get('/api/health');
+      // /health has an independent liveness limiter; pace against the application window.
+      const response = await request.get('/api/ready');
       const header = response.headers().ratelimit ?? '';
       const remaining = /r=(\d+)/.exec(header)?.[1];
       const reset = /t=(\d+)/.exec(header)?.[1];

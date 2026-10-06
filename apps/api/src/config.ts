@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isIP } from 'node:net';
 
 function parseUrl(value: string): URL | null {
   try {
@@ -14,6 +15,31 @@ const httpUrl = z.string().refine((value) => {
 const schema = z
   .object({
     APP_ENV: z.enum(['development', 'test', 'production']),
+    TRUST_PROXY_CIDRS: z
+      .string()
+      .default('')
+      .transform((value) =>
+        value
+          .split(',')
+          .map((part) => part.trim())
+          .filter(Boolean),
+      )
+      .refine(
+        (values) =>
+          values.length <= 8 &&
+          values.every((value) => {
+            const [address, mask, extra] = value.split('/');
+            const family = isIP(address ?? '');
+            return (
+              !extra &&
+              family !== 0 &&
+              (mask === undefined ||
+                (/^\d+$/.test(mask) &&
+                  Number(mask) > 0 &&
+                  Number(mask) <= (family === 4 ? 32 : 128)))
+            );
+          }),
+      ),
     API_PORT: z.coerce.number().int().min(1).max(65535),
     PUBLIC_WEB_URL: httpUrl.refine((value) => {
       const url = parseUrl(value);

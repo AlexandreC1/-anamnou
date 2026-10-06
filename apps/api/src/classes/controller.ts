@@ -14,7 +14,7 @@ import { ApiBody, ApiCookieAuth, ApiTags, ApiQuery } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { z } from 'zod';
 import { IdentityService } from '../auth/service.js';
-import { parse, sessionToken } from '../auth/security.js';
+import { parse, sessionToken, passwordSchema } from '../auth/security.js';
 import { SchoolsService } from './schools.js';
 import { ClassesService } from './service.js';
 import { InvitationsService } from './invitations.js';
@@ -114,6 +114,33 @@ export class ClassesController {
       await this.user(request),
       parse(idSchema, id),
       parse(pagination, query),
+    );
+  }
+  @Patch('schools/:id/verification')
+  async verifySchool(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    const user = await this.user(request);
+    this.identity.requirePlatformAdmin(user);
+    const input = parse(
+      z
+        .object({
+          verified: z.boolean(),
+          reason: z.string().trim().min(20).max(500),
+          password: passwordSchema,
+        })
+        .strict(),
+      body,
+    );
+    const confirmed = await this.identity.confirmPassword(user, input.password);
+    this.identity.requirePlatformAdmin(confirmed);
+    return this.schools.verify(
+      confirmed,
+      parse(idSchema, id),
+      input.verified,
+      input.reason,
     );
   }
   @Post('classes')

@@ -22,6 +22,7 @@ import { LandingPage } from './LandingPage';
 import './prism.css';
 import { apiFetch } from './api-transport';
 import { NativeNavigation } from './NativeNavigation';
+import { SecuritySettings } from './SecuritySettings';
 import { AppearanceSettings, type AnamnouTheme } from './AppearanceSettings';
 
 type Locale = 'ht' | 'fr' | 'en' | 'es';
@@ -287,6 +288,10 @@ export function App() {
             />
           ))}
           <Route path="/profile" element={<AccountPage locale={locale} />} />
+          <Route
+            path="/settings/security"
+            element={<SecuritySettings locale={locale} />}
+          />
           <Route path="*" element={<NotFound locale={locale} />} />
         </Routes>
       </main>

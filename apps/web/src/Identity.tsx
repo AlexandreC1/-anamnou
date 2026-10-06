@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router';
 import { identityCopy, type Locale } from './identity-copy';
 import { classCopy } from './class-copy';
 import { deliveryCopy } from './delivery-copy';
+import { securityLabels } from './SecuritySettings';
 import {
   ApiError,
   identityRequest,
@@ -342,6 +343,9 @@ export function AccountPage({ locale }: { locale: Locale }) {
             </form>
             {saved && <p role="status">{t.saved}</p>}
             <div className="account-links">
+              <Link to="/settings/security">
+                {securityLabels[locale].title}
+              </Link>
               <Link to="/classes">{classCopy[locale].myClasses}</Link>
               <Link to="/forgot-password">{t.reset}</Link>
               <button
