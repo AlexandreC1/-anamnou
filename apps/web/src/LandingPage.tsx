@@ -13,7 +13,10 @@ const en = {
   sample: 'An illustrated edition',
   open: 'Take a peek inside',
   close: 'Back to the cover',
-  photo: 'Graduation friends in an illustrative yearbook',
+  photo:
+    'Graduates pictured on the Campus Henry Christophe de Limonade website',
+  credits: 'Demo photography',
+  ceremony: 'Graduation ceremony pictured on the UNAH website',
   note: 'The little moments. The whole story.',
   inside: 'A place for every one of us.',
   insideNote: 'Your photos, your words, your class. All in one shared edition.',
@@ -54,7 +57,9 @@ const content: Record<Locale, typeof en> = {
     sample: 'Yon egzanp edisyon',
     open: 'Gade anndan',
     close: 'Retounen sou kouvèti a',
-    photo: 'Zanmi nan gradyasyon nan yon egzanp liv klas',
+    photo: 'Diplome sou sit Campus Henry Christophe de Limonade la',
+    credits: 'Foto pou demonstrasyon',
+    ceremony: 'Seremoni gradyasyon sou sit UNAH la',
     note: 'Ti moman yo. Tout istwa a.',
     inside: 'Yon plas pou nou chak.',
     insideNote: 'Foto nou, pawòl nou, klas nou. Tout nan yon edisyon ansanm.',
@@ -93,7 +98,10 @@ const content: Record<Locale, typeof en> = {
     sample: 'Un exemple d’édition',
     open: 'Jeter un œil à l’intérieur',
     close: 'Revenir à la couverture',
-    photo: 'Amies diplômées dans un exemple d’album',
+    photo:
+      'Diplômés photographiés sur le site du Campus Henry Christophe de Limonade',
+    credits: 'Photos de démonstration',
+    ceremony: 'Cérémonie de graduation photographiée sur le site de l’UNAH',
     note: 'Les petits moments. Toute une histoire.',
     inside: 'Une place pour chacun de nous.',
     insideNote:
@@ -133,7 +141,10 @@ const content: Record<Locale, typeof en> = {
     sample: 'Una edición ilustrativa',
     open: 'Echa un vistazo dentro',
     close: 'Volver a la portada',
-    photo: 'Amigas graduadas en un anuario ilustrativo',
+    photo:
+      'Graduados fotografiados en el sitio del Campus Henry Christophe de Limonade',
+    credits: 'Fotografías de demostración',
+    ceremony: 'Ceremonia de graduación fotografiada en el sitio de UNAH',
     note: 'Los pequeños momentos. Toda la historia.',
     inside: 'Un lugar para cada uno.',
     insideNote:
@@ -186,72 +197,97 @@ function YearbookScene({ locale, theme }: { locale: Locale; theme: string }) {
   const t = content[locale];
   const [open, setOpen] = useState(false);
   return (
-    <div className="memory-stage" data-theme={theme}>
-      <div className="stage-orbit" aria-hidden="true" />
-      <div className="glass-pebble pebble-one" aria-hidden="true" />
-      <div className="glass-pebble pebble-two" aria-hidden="true" />
-      <div className="stage-caption">
-        <span className="status-dot" />
-        {t.sample}
-      </div>
-      <div
-        className={'sculpture-book' + (open ? ' is-open' : '')}
-        aria-hidden="true"
-      >
-        <div className="sculpture-pages">
-          <span className="page-kicker">Anamnou / 01</span>
-          <img
-            src="/images/graduation-friends.jpg"
-            alt=""
-            width="1200"
-            height="1800"
-          />
-          <strong>{t.inside}</strong>
-          <p>{t.insideNote}</p>
+    <div className="demo-edition">
+      <div className="memory-stage" data-theme={theme}>
+        <div className="stage-orbit" aria-hidden="true" />
+        <div className="glass-pebble pebble-one" aria-hidden="true" />
+        <div className="glass-pebble pebble-two" aria-hidden="true" />
+        <div className="stage-caption">
+          <span className="status-dot" />
+          {t.sample}
         </div>
-        <div className="sculpture-cover">
-          <div className="cover-masthead">
-            <span>Anamnou.</span>
-            <span>VOL. 01</span>
-          </div>
-          <p className="sculpture-title">{publicCopy[locale].cover}</p>
-          <div className="cover-window">
+        <div
+          className={'sculpture-book' + (open ? ' is-open' : '')}
+          aria-hidden="true"
+        >
+          <div className="sculpture-pages">
+            <span className="page-kicker">Anamnou / 01</span>
             <img
-              src="/images/graduation-friends.jpg"
+              src="/images/haitian-graduation-unah.webp"
               alt=""
               width="1200"
-              height="1800"
+              height="800"
+              decoding="async"
             />
+            <strong>{t.inside}</strong>
+            <p>{t.insideNote}</p>
           </div>
-          <div className="cover-bottom">
-            <span>{publicCopy[locale].archive}</span>
-            <span>2026</span>
+          <div className="sculpture-cover">
+            <div className="cover-masthead">
+              <span>Anamnou.</span>
+              <span>VOL. 01</span>
+            </div>
+            <p className="sculpture-title">{publicCopy[locale].cover}</p>
+            <div className="cover-window">
+              <img
+                src="/images/haitian-graduates-chcl.webp"
+                alt=""
+                width="1600"
+                height="577"
+                fetchPriority="high"
+                decoding="async"
+              />
+            </div>
+            <div className="cover-bottom">
+              <span>{publicCopy[locale].archive}</span>
+              <span>2026</span>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="floating-memory" aria-hidden="true">
-        <span>01 / Anamnou</span>
-        <p>{t.note}</p>
-        <div className="memory-line" />
-      </div>
-      <div className="stage-controls">
-        <button
-          className="peek-button"
-          type="button"
-          aria-expanded={open}
-          aria-controls="edition-preview-description"
-          onClick={() => setOpen((value) => !value)}
+        <div className="floating-memory" aria-hidden="true">
+          <span>01 / Anamnou</span>
+          <p>{t.note}</p>
+          <div className="memory-line" />
+        </div>
+        <div className="stage-controls">
+          <button
+            className="peek-button"
+            type="button"
+            aria-expanded={open}
+            aria-controls="edition-preview-description"
+            onClick={() => setOpen((value) => !value)}
+          >
+            {open ? t.close : t.open}
+            <Arrow />
+          </button>
+        </div>
+        <p
+          id="edition-preview-description"
+          className="preview-description"
+          hidden={!open}
         >
-          {open ? t.close : t.open}
-          <Arrow />
-        </button>
+          {t.inside} {t.insideNote}
+        </p>
       </div>
-      <p
-        id="edition-preview-description"
-        className="preview-description"
-        hidden={!open}
-      >
-        {t.inside} {t.insideNote}
+      <p className="demo-photo-credits">
+        {t.credits}:{' '}
+        <a
+          href="https://chcl.ueh.edu.ht/"
+          target="_blank"
+          rel="noopener noreferrer"
+          title={t.photo}
+        >
+          UEH · CHCL
+        </a>
+        {' / '}
+        <a
+          href="https://unah.edu.ht/"
+          target="_blank"
+          rel="noopener noreferrer"
+          title={t.ceremony}
+        >
+          UNAH
+        </a>
       </p>
     </div>
   );
