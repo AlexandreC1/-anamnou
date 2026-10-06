@@ -105,7 +105,7 @@ returned `found 0 vulnerabilities`. No production services or real users were te
    work does not prove that credential was revoked and does not reproduce it.
 2. Implement and enforce MFA, especially for privileged accounts. Session controls
    and password reauthentication do not substitute for MFA.
-3. For minors in Haiti, the system administrator is the confirmed review owner;
+3. For minors, implement the shared governance model in `universal-governance-standard.md`;
    approve the applicable guardian/school consent, notice, withdrawal, retention,
    reporting/moderation, data export and erasure process. Consent must be tied to
    reviewed policy versions and appropriate authorization. The pilot cannot be
@@ -173,9 +173,9 @@ Exact changed paths:
 - scripts/mobile.mjs
 - tests/e2e/fixtures.ts
 
-## Haiti pilot: next implementation contract
+## Superseded pilot implementation contract
 
-The owner selected Haiti and system-administrator review. The following workflow
+The owner subsequently broadened the requirement to international, shared governance. See [Universal governance standard](universal-governance-standard.md), which supersedes the single-administrator model below. The following historical workflow
 is planned; it is not implemented by the technical hardening patch:
 
 1. Record participation requests against authenticated class membership. Keep
