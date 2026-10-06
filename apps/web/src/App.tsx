@@ -1,29 +1,70 @@
-import { useEffect, useRef, useState } from 'react';
+import {
+  Component,
+  Suspense,
+  lazy,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { Link, NavLink, Route, Routes, useLocation } from 'react-router';
-import { AccountPage, IdentityForm } from './Identity';
 import { identityCopy } from './identity-copy';
 import { publicCopy } from './public-copy';
-import {
-  ClassesHome,
-  SchoolForm,
-  SchoolManage,
-  CreateClass,
-  ClassHome,
-  JoinClass,
-} from './Classes';
-import { ClassManage, MemberDirectory } from './ClassManage';
+
 import { classCopy } from './class-copy';
-import { MemberProfile } from './MemberProfile';
-import { YearbookEditor } from './YearbookEditor';
-import { YearbookReader } from './YearbookReader';
+
 import { ClassWorkspace } from './ClassWorkspace';
 import './yearbook.css';
 import { LandingPage } from './LandingPage';
 import './prism.css';
 import { apiFetch } from './api-transport';
 import { NativeNavigation } from './NativeNavigation';
-import { SecuritySettings } from './SecuritySettings';
+
 import { AppearanceSettings, type AnamnouTheme } from './AppearanceSettings';
+
+import { preloadRoute, routeModules } from './route-preload';
+const AccountPage = lazy(() =>
+  routeModules.identity().then((m) => ({ default: m.AccountPage })),
+);
+const IdentityForm = lazy(() =>
+  routeModules.identity().then((m) => ({ default: m.IdentityForm })),
+);
+const ClassesHome = lazy(() =>
+  routeModules.classes().then((m) => ({ default: m.ClassesHome })),
+);
+const SchoolForm = lazy(() =>
+  routeModules.classes().then((m) => ({ default: m.SchoolForm })),
+);
+const SchoolManage = lazy(() =>
+  routeModules.classes().then((m) => ({ default: m.SchoolManage })),
+);
+const CreateClass = lazy(() =>
+  routeModules.classes().then((m) => ({ default: m.CreateClass })),
+);
+const ClassHome = lazy(() =>
+  routeModules.classes().then((m) => ({ default: m.ClassHome })),
+);
+const JoinClass = lazy(() =>
+  routeModules.classes().then((m) => ({ default: m.JoinClass })),
+);
+const ClassManage = lazy(() =>
+  routeModules.manage().then((m) => ({ default: m.ClassManage })),
+);
+const MemberDirectory = lazy(() =>
+  routeModules.manage().then((m) => ({ default: m.MemberDirectory })),
+);
+const MemberProfile = lazy(() =>
+  routeModules.profile().then((m) => ({ default: m.MemberProfile })),
+);
+const YearbookEditor = lazy(() =>
+  routeModules.editor().then((m) => ({ default: m.YearbookEditor })),
+);
+const YearbookReader = lazy(() =>
+  routeModules.reader().then((m) => ({ default: m.YearbookReader })),
+);
+const SecuritySettings = lazy(() =>
+  routeModules.security().then((m) => ({ default: m.SecuritySettings })),
+);
 
 type Locale = 'ht' | 'fr' | 'en' | 'es';
 const localeLabels: Record<Locale, string> = {
@@ -117,12 +158,24 @@ function RouteFocus({ locale }: { locale: Locale }) {
   const { pathname } = useLocation();
   const previous = useRef(pathname);
   useEffect(() => {
-    document.title =
-      (document.querySelector('h1')?.textContent ?? 'Anamnou') + ' | Anamnou';
+    function updateTitle() {
+      document.title =
+        (document.querySelector('h1')?.textContent ?? 'Anamnou') + ' | Anamnou';
+    }
+    updateTitle();
+    const observer = new MutationObserver(updateTitle);
+    const main = document.getElementById('main');
+    if (main)
+      observer.observe(main, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
     if (previous.current !== pathname) {
       document.getElementById('main')?.focus();
       previous.current = pathname;
     }
+    return () => observer.disconnect();
   }, [pathname, locale]);
   return null;
 }
@@ -183,6 +236,31 @@ export function App() {
   const [locale, setLocale] = useLocale();
   const [theme, setTheme] = useAppearance();
   const selected = copy[locale];
+  useEffect(() => {
+    function warm(event: Event) {
+      const anchor =
+        event.target instanceof Element
+          ? event.target.closest('a[href]')
+          : null;
+      if (
+        !(anchor instanceof HTMLAnchorElement) ||
+        anchor.target === '_blank' ||
+        anchor.hasAttribute('download')
+      )
+        return;
+      const url = new URL(anchor.href);
+      if (url.origin === window.location.origin)
+        void preloadRoute(url.pathname);
+    }
+    document.addEventListener('pointerover', warm);
+    document.addEventListener('focusin', warm);
+    document.addEventListener('touchstart', warm, { passive: true });
+    return () => {
+      document.removeEventListener('pointerover', warm);
+      document.removeEventListener('focusin', warm);
+      document.removeEventListener('touchstart', warm);
+    };
+  }, []);
   const { pathname } = useLocation();
   const inWorkspace = /^\/classes\/(?!new(?:\/|$))[^/]+/.test(pathname);
   return (
@@ -220,80 +298,109 @@ export function App() {
       <RouteFocus locale={locale} />
       <NativeNavigation />
       <main id="main" tabIndex={-1}>
-        <Routes>
-          <Route
-            path="/classes/:id"
-            element={<ClassWorkspace locale={locale} />}
-          >
-            <Route index element={<ClassHome locale={locale} />} />
-            <Route
-              path="members/:memberId/profile"
-              element={<MemberProfile locale={locale} />}
-            />
-            <Route
-              path="yearbook"
-              element={<YearbookReader locale={locale} />}
-            />
-            <Route
-              path="yearbook/edit"
-              element={<YearbookEditor locale={locale} />}
-            />
-            <Route path="manage" element={<ClassManage locale={locale} />} />
-            <Route
-              path="members"
-              element={<MemberDirectory locale={locale} />}
-            />
-          </Route>
-          <Route path="/classes" element={<ClassesHome locale={locale} />} />
-          <Route path="/schools/new" element={<SchoolForm locale={locale} />} />
-          <Route
-            path="/schools/:id/manage"
-            element={<SchoolManage locale={locale} />}
-          />
-          <Route
-            path="/classes/new"
-            element={<CreateClass locale={locale} />}
-          />
-          <Route path="/join" element={<JoinClass locale={locale} />} />
-          <Route
-            path="/"
-            element={<Home selected={selected} locale={locale} theme={theme} />}
-          />
-          <Route
-            path="/settings/appearance"
-            element={
-              <AppearanceSettings
-                locale={locale}
-                theme={theme}
-                onChange={setTheme}
-              />
+        <PageBoundary pathname={pathname} locale={locale}>
+          <Suspense
+            fallback={
+              <p className="route-loading" role="status">
+                {classCopy[locale].loading}
+              </p>
             }
-          />
-          <Route path="/about" element={<About locale={locale} />} />
-          <Route path="/connection" element={<Connection locale={locale} />} />
-          {(
-            [
-              'register',
-              'login',
-              'forgot-password',
-              'reset-password',
-              'verify-email',
-              'resend-verification',
-            ] as const
-          ).map((mode) => (
-            <Route
-              key={mode}
-              path={'/' + mode}
-              element={<IdentityForm key={mode} mode={mode} locale={locale} />}
-            />
-          ))}
-          <Route path="/profile" element={<AccountPage locale={locale} />} />
-          <Route
-            path="/settings/security"
-            element={<SecuritySettings locale={locale} />}
-          />
-          <Route path="*" element={<NotFound locale={locale} />} />
-        </Routes>
+          >
+            <Routes>
+              <Route
+                path="/classes/:id"
+                element={<ClassWorkspace locale={locale} />}
+              >
+                <Route index element={<ClassHome locale={locale} />} />
+                <Route
+                  path="members/:memberId/profile"
+                  element={<MemberProfile locale={locale} />}
+                />
+                <Route
+                  path="yearbook"
+                  element={<YearbookReader locale={locale} />}
+                />
+                <Route
+                  path="yearbook/edit"
+                  element={<YearbookEditor locale={locale} />}
+                />
+                <Route
+                  path="manage"
+                  element={<ClassManage locale={locale} />}
+                />
+                <Route
+                  path="members"
+                  element={<MemberDirectory locale={locale} />}
+                />
+              </Route>
+              <Route
+                path="/classes"
+                element={<ClassesHome locale={locale} />}
+              />
+              <Route
+                path="/schools/new"
+                element={<SchoolForm locale={locale} />}
+              />
+              <Route
+                path="/schools/:id/manage"
+                element={<SchoolManage locale={locale} />}
+              />
+              <Route
+                path="/classes/new"
+                element={<CreateClass locale={locale} />}
+              />
+              <Route path="/join" element={<JoinClass locale={locale} />} />
+              <Route
+                path="/"
+                element={
+                  <Home selected={selected} locale={locale} theme={theme} />
+                }
+              />
+              <Route
+                path="/settings/appearance"
+                element={
+                  <AppearanceSettings
+                    locale={locale}
+                    theme={theme}
+                    onChange={setTheme}
+                  />
+                }
+              />
+              <Route path="/about" element={<About locale={locale} />} />
+              <Route
+                path="/connection"
+                element={<Connection locale={locale} />}
+              />
+              {(
+                [
+                  'register',
+                  'login',
+                  'forgot-password',
+                  'reset-password',
+                  'verify-email',
+                  'resend-verification',
+                ] as const
+              ).map((mode) => (
+                <Route
+                  key={mode}
+                  path={'/' + mode}
+                  element={
+                    <IdentityForm key={mode} mode={mode} locale={locale} />
+                  }
+                />
+              ))}
+              <Route
+                path="/profile"
+                element={<AccountPage locale={locale} />}
+              />
+              <Route
+                path="/settings/security"
+                element={<SecuritySettings locale={locale} />}
+              />
+              <Route path="*" element={<NotFound locale={locale} />} />
+            </Routes>
+          </Suspense>
+        </PageBoundary>
       </main>
       <footer className="site-footer">
         <p>{selected.footer}</p>
@@ -403,4 +510,36 @@ function NotFound({ locale }: { locale: Locale }) {
       </Link>
     </section>
   );
+}
+
+class PageBoundary extends Component<
+  { children: ReactNode; locale: Locale; pathname: string },
+  { failed: boolean }
+> {
+  override state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  override componentDidUpdate(
+    previous: Readonly<{
+      children: ReactNode;
+      locale: Locale;
+      pathname: string;
+    }>,
+  ) {
+    if (this.state.failed && previous.pathname !== this.props.pathname)
+      this.setState({ failed: false });
+  }
+  override render() {
+    return this.state.failed ? (
+      <section className="reading" role="alert">
+        <p>{classCopy[this.props.locale].error}</p>
+        <button onClick={() => window.location.reload()}>
+          {classCopy[this.props.locale].retry}
+        </button>
+      </section>
+    ) : (
+      this.props.children
+    );
+  }
 }

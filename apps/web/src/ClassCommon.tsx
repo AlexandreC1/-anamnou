@@ -50,7 +50,14 @@ export function LoadState({
       <Link to="/classes">{t.back}</Link>
     </div>
   ) : (
-    <p role="status">{t.loading}</p>
+    <div className="resource-loading" role="status">
+      <p>{t.loading}</p>
+      <div className="loading-lines" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+    </div>
   );
 }
 export function Pagination({
@@ -160,11 +167,15 @@ export function ResourceForm({
     <form
       className="account-form"
       onSubmit={(event) => void submit(event)}
+      onChange={() => setSaved(false)}
       aria-busy={busy}
     >
-      {children}
+      <fieldset className="resource-fields" disabled={busy}>
+        {children}
+      </fieldset>
       {error !== undefined && <p role="alert">{classError(error, locale)}</p>}
       {saved && <p role="status">{classCopy[locale].saved}</p>}
+      {busy && <p role="status">{classCopy[locale].busy}</p>}
       <button disabled={busy}>{busy ? classCopy[locale].busy : label}</button>
     </form>
   );

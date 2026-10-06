@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet, useParams } from 'react-router';
+import { Suspense } from 'react';
 import { useResource, type ClassDetail } from './class-api';
 import { classCopy } from './class-copy';
 import { yearbookCopy } from './yearbook-copy';
@@ -47,7 +48,15 @@ export function ClassWorkspace({ locale }: { locale: Locale }) {
         </nav>
       </header>
       <div className="workspace-content">
-        <Outlet />
+        <Suspense
+          fallback={
+            <p className="route-loading" role="status">
+              {classCopy[locale].loading}
+            </p>
+          }
+        >
+          <Outlet />
+        </Suspense>
       </div>
     </div>
   );

@@ -523,3 +523,32 @@ nav a[aria-current='page'] {
     transform: none;
   }
 }
+
+.route-loading,
+.resource-loading {
+  min-height: 12rem;
+  padding-block: 2rem;
+}
+.loading-lines {
+  display: grid;
+  gap: 1rem;
+  max-width: 38rem;
+}
+.loading-lines span {
+  display: block;
+  height: 1.1rem;
+  border-radius: 0.4rem;
+  background: currentColor;
+  opacity: 0.08;
+}
+.loading-lines span:last-child {
+  width: 65%;
+}
+.resource-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: inherit;
+}
