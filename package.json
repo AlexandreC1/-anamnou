@@ -32,7 +32,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "npm run db:generate && tsc -p tsconfig.tools.json --noEmit && npm run typecheck --workspaces",
-    "test": "npm run test --workspaces",
+    "test": "npm run test --workspaces && node --test deploy/cloudflare/proxy.test.mjs",
     "test:setup": "node scripts/setup-test-db.mjs",
     "test:integration": "npm run test:setup && npm run test:integration --workspace @yearbook/api",
     "test:e2e": "npm run test:setup && playwright test",

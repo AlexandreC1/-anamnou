@@ -4,7 +4,7 @@ import { parseEnvironment } from './config.js';
 async function main() {
   const environment = parseEnvironment(process.env);
   const app = await createApp(environment);
-  await app.listen(environment.API_PORT, '127.0.0.1');
+  await app.listen(environment.API_PORT, environment.API_HOST);
 }
 main().catch(() => {
   console.error(

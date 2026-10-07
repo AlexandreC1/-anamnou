@@ -1,0 +1,12 @@
+.git
+.env
+.env.*
+.tools
+**/node_modules
+**/dist
+**/dist-test
+**/generated
+apps/web/android
+apps/web/ios
+test-results
+playwright-report

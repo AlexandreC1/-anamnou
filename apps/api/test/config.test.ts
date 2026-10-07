@@ -21,6 +21,14 @@ test('environment rejects out-of-range ports and non-HTTP storage endpoints', ()
     SMTP_PORT: '1025',
   };
   assert.throws(() => parseEnvironment({ ...valid, API_PORT: '65536' }));
+  assert.equal(parseEnvironment(valid).API_HOST, '127.0.0.1');
+  assert.equal(
+    parseEnvironment({ ...valid, API_HOST: '0.0.0.0' }).API_HOST,
+    '0.0.0.0',
+  );
+  assert.throws(() =>
+    parseEnvironment({ ...valid, API_HOST: 'untrusted.example' }),
+  );
   assert.throws(() =>
     parseEnvironment({ ...valid, STORAGE_ENDPOINT: 'file:///etc/passwd' }),
   );
