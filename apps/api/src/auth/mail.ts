@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { createHash } from 'node:crypto';
 import type { Environment } from '../config.js';
 
 const messages = {
@@ -25,7 +26,10 @@ const messages = {
 };
 export class IdentityMailer {
   private readonly transport;
-  constructor(private readonly environment: Environment) {
+  constructor(
+    private readonly environment: Environment,
+    private readonly sendHttp: typeof fetch = fetch,
+  ) {
     this.transport = nodemailer.createTransport({
       host: environment.SMTP_HOST,
       port: environment.SMTP_PORT,
@@ -58,6 +62,42 @@ export class IdentityMailer {
     const subject = purpose === 'VERIFY_EMAIL' ? copy.verify : copy.reset;
     // Fragment avoids tokens in HTTP request URLs, access logs and Referer headers.
     const url = `${this.environment.PUBLIC_WEB_URL}/${route}#token=${token}`;
+    if (this.environment.MAIL_TRANSPORT === 'resend') {
+      try {
+        const response = await this.sendHttp('https://api.resend.com/emails', {
+          method: 'POST',
+          redirect: 'error',
+          signal: AbortSignal.timeout(10000),
+          headers: {
+            Authorization: `Bearer ${this.environment.RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+            'Idempotency-Key': createHash('sha256')
+              .update(JSON.stringify([purpose, email, token]))
+              .digest('hex'),
+          },
+          body: JSON.stringify({
+            from: this.environment.MAIL_FROM,
+            to: [email],
+            subject,
+            text: `${subject}\n\n${copy.help}\n\n${url}`,
+          }),
+        });
+        if (!response.ok) throw new Error('Email delivery failed.');
+        const receipt: unknown = await response.json();
+        if (
+          !receipt ||
+          typeof receipt !== 'object' ||
+          !('id' in receipt) ||
+          typeof receipt.id !== 'string' ||
+          !receipt.id
+        )
+          throw new Error('Email delivery failed.');
+      } catch {
+        // Provider bodies and network errors can include credentials or personal data.
+        throw new Error('Email delivery failed.');
+      }
+      return;
+    }
     await this.transport.sendMail({
       from: this.environment.MAIL_FROM,
       to: email,
