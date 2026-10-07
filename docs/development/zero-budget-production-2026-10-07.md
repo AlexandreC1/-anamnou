@@ -8,7 +8,28 @@ Created `anamnou-production` in Neon, project `green-hat-16572053`, branch
 (N. Virginia). This is a separate new project; the existing `kadolakay` project
 was not modified. Schema migrations and application credentials are not connected
 yet. Resend is signed in but has no verified domains. Cloudflare lists only
-`gidyo.com`, with status pending. Domain choice remains unanswered.
+`gidyo.com`, with status pending. The user authorized domain selection; the chosen
+email domain is `mail.anamnou.gidyo.com`, registered in Resend as
+`23ea869f-6cdf-4c83-9694-0413dc1ebbfb` in North Virginia. Verification has not
+started. The intended sender is `accounts@mail.anamnou.gidyo.com`.
+
+Public DNS identifies `ns1.veridyen.com` and `ns2.veridyen.com` as the authoritative
+nameservers for `gidyo.com`. Adding records to the pending Cloudflare zone would
+not publish them. Preserve the current nameservers and existing mail routing.
+Veridyen access currently stops at its browser security verification page; the
+user has been asked to complete the check and sign in. No DNS records were added.
+
+Required records below use names relative to `gidyo.com`. The TXT value is a
+public DKIM verification key, not an application credential.
+
+| Type  | Name                             | Value                                                                                                                                                                                                                        |
+| ----- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TXT   | `resend._domainkey.mail.anamnou` | `p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCcGQbg4RgfrBvAtBp4wGcxy8W8+RdsP7MvAbIGqCv3u9mzc1w2PHrkP+DfPPbipwLnGi5rMfjaMu0mWI/BTNZgsk4aDgn2ZSAtc4eZey3mjTZo0pn4z96SLjN3fag/LdlRYvB0sBA0xvlbDz1MOJRVRKQWe5+TzDi36Wqun60kLwIDAQAB` |
+| CNAME | `rsend.mail.anamnou`             | `rsend.forge.rmta.net`                                                                                                                                                                                                       |
+| CNAME | `send.mail.anamnou`              | `send.forge.rmta.net`                                                                                                                                                                                                        |
+
+After publication, verify public resolution and Resend domain status before
+configuring production sending. Live password recovery is still unverified.
 
 Render Free is the proposed backend host. The user signed in; its deployment form
 is prepared for `anamnou-api`, Docker, Virginia, the feature branch and the Free
