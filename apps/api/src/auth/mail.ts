@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { createHash } from 'node:crypto';
 import type { Environment } from '../config.js';
+import { sendGmail } from './gmail.js';
 
 const messages = {
   en: {
@@ -62,6 +63,16 @@ export class IdentityMailer {
     const subject = purpose === 'VERIFY_EMAIL' ? copy.verify : copy.reset;
     // Fragment avoids tokens in HTTP request URLs, access logs and Referer headers.
     const url = `${this.environment.PUBLIC_WEB_URL}/${route}#token=${token}`;
+    if (this.environment.MAIL_TRANSPORT === 'gmail') {
+      await sendGmail(
+        this.environment,
+        this.sendHttp,
+        email,
+        subject,
+        `${subject}\n\n${copy.help}\n\n${url}`,
+      );
+      return;
+    }
     if (this.environment.MAIL_TRANSPORT === 'resend') {
       try {
         const response = await this.sendHttp('https://api.resend.com/emails', {

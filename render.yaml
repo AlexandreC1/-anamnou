@@ -20,10 +20,14 @@ services:
       - key: PUBLIC_WEB_URL
         value: https://anamnou-preview.pages.dev
       - key: MAIL_TRANSPORT
-        value: resend
+        value: gmail
       - key: DATABASE_URL
         sync: false
-      - key: RESEND_API_KEY
+      - key: GMAIL_CLIENT_ID
+        sync: false
+      - key: GMAIL_CLIENT_SECRET
+        sync: false
+      - key: GMAIL_REFRESH_TOKEN
         sync: false
       - key: MAIL_FROM
         sync: false
@@ -32,7 +36,7 @@ services:
       - key: STORAGE_ENDPOINT
         sync: false
       - key: STORAGE_REGION
-        value: auto
+        sync: false
       - key: STORAGE_BUCKET
         sync: false
       - key: STORAGE_ACCESS_KEY

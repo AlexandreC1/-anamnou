@@ -68,13 +68,29 @@ const schema = z
     SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(1025),
     SMTP_USER: z.string().default(''),
     SMTP_PASSWORD: z.string().default(''),
-    MAIL_TRANSPORT: z.enum(['smtp', 'resend']).default('smtp'),
+    MAIL_TRANSPORT: z.enum(['smtp', 'resend', 'gmail']).default('smtp'),
+    GMAIL_CLIENT_ID: z.string().default(''),
+    GMAIL_CLIENT_SECRET: z.string().default(''),
+    GMAIL_REFRESH_TOKEN: z.string().default(''),
     RESEND_API_KEY: z.string().default(''),
     MAIL_FROM: z.string().email().default('yearbook@localhost.test'),
     // Base64-encoded 32-byte key that seals TOTP secrets at rest.
     MFA_ENCRYPTION_KEY: z.string().regex(/^[A-Za-z0-9+/]{43}=$/),
   })
   .superRefine((value, context) => {
+    if (
+      value.MAIL_TRANSPORT === 'gmail' &&
+      (!value.GMAIL_CLIENT_ID.endsWith('.apps.googleusercontent.com') ||
+        !value.GMAIL_CLIENT_SECRET ||
+        !value.GMAIL_REFRESH_TOKEN ||
+        !value.MAIL_FROM.endsWith('@gmail.com'))
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['GMAIL_CLIENT_ID'],
+        message: 'Gmail OAuth credentials and Gmail sender required.',
+      });
+    }
     if (
       value.MAIL_TRANSPORT === 'resend' &&
       !/^re_[A-Za-z0-9_-]{16,}$/.test(value.RESEND_API_KEY)
