@@ -29,6 +29,22 @@ test('real registration, inbox verification, login, profile, logout and password
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page).toHaveURL(/\/profile$/);
+  await page.getByRole('link', { name: 'Review teams', exact: true }).click();
+  await expect(page).toHaveURL(/\/settings\/governance$/);
+  await expect(
+    page.getByRole('heading', { name: 'Your role grants' }),
+  ).toBeVisible();
+  await expect(page.getByText('No role grants yet.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Create queue' })).toHaveCount(
+    0,
+  );
+  await page.screenshot({
+    path: 'test-results/governance-' + test.info().project.name + '.png',
+    fullPage: true,
+  });
+  await page.goto('/profile');
+  await expect(page.getByLabel('Display name')).toBeVisible();
+  // The governance view above uses a real authenticated account with no grants.
   await page
     .getByLabel('Display name')
     .fill('<script>window.injected = true</script>');

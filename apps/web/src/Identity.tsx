@@ -4,6 +4,7 @@ import { identityCopy, type Locale } from './identity-copy';
 import { classCopy } from './class-copy';
 import { deliveryCopy } from './delivery-copy';
 import { securityLabels } from './SecuritySettings';
+import { governanceCopy } from './governance-copy';
 import {
   ApiError,
   identityRequest,
@@ -409,6 +410,9 @@ export function AccountPage({ locale }: { locale: Locale }) {
                 {securityLabels[locale].title}
               </Link>
               <Link to="/classes">{classCopy[locale].myClasses}</Link>
+              <Link to="/settings/governance">
+                {governanceCopy[locale].title}
+              </Link>
               <Link to="/forgot-password">{t.reset}</Link>
               <button
                 className="secondary-button"

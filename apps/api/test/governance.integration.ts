@@ -208,6 +208,22 @@ test('governance enforces independent grants, tenant scope, MFA, backup coverage
       primary!,
     );
     assert.equal(list.status, 200);
+    for (const [actor, expected] of [
+      [manager!, true],
+      [requester!, false],
+      [primary!, false],
+    ] as const) {
+      const response = await call(
+        '/governance/queues?schoolId=' + schoolIds[0],
+        actor,
+      );
+      assert.equal(response.status, 200);
+      assert.equal(
+        ((await response.json()) as { permissions: { manageQueues: boolean } })
+          .permissions.manageQueues,
+        expected,
+      );
+    }
     assert.equal(
       ((await list.json()) as { items: { covered: boolean }[] }).items[0]!
         .covered,

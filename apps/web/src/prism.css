@@ -1529,3 +1529,45 @@ a svg {
   color: inherit;
   text-underline-offset: 3px;
 }
+
+.governance-settings > .theme-panel,
+.governance-settings > form,
+.governance-scope > .theme-panel {
+  margin-top: 24px;
+}
+.governance-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+}
+.governance-list > li {
+  padding: 20px 0;
+  border-top: 1px solid var(--rule);
+}
+.governance-list code,
+.governance-scope code {
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+}
+.governance-action {
+  margin-top: 16px;
+}
+.governance-help {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.governance-uncovered {
+  font-weight: 600;
+  color: var(--accent);
+}
+.governance-covered {
+  font-weight: 600;
+}
+.governance-list details {
+  margin-top: 16px;
+}
+.governance-list summary {
+  cursor: pointer;
+  padding-block: 8px;
+}

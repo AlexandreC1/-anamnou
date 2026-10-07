@@ -7,12 +7,14 @@ export const routeModules = {
   editor: () => import('./YearbookEditor'),
   reader: () => import('./YearbookReader'),
   security: () => import('./SecuritySettings'),
+  governance: () => import('./GovernanceSettings'),
 };
 
 export function routeModule(
   path: string,
 ): keyof typeof routeModules | undefined {
   if (path === '/settings/security') return 'security';
+  if (path === '/settings/governance') return 'governance';
   if (
     /^\/(profile|register|login|forgot-password|reset-password|verify-email|resend-verification)$/.test(
       path,

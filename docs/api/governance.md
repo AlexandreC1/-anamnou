@@ -24,3 +24,9 @@ Queue creation body: `schoolId`, `name` (2–120 characters), `role` (CONSENT_RE
 List responses contain `items` (maximum fifty) and nullable `nextCursor`. Queue items include `primaryAvailable`, `backupAvailable`, and `covered`. Available means the grant/account/MFA checks pass, not that a reviewer is currently online. Coverage changes immediately when authorization expires, is revoked or its account becomes disabled. No private student evidence or account secrets are returned.
 
 403 indicates insufficient MFA/platform authorization; 404 intentionally conceals resources outside the caller's school grants; 409 indicates invalid state or a conflict; malformed/extra fields are rejected. Access is checked in the service transaction as well as at the controller boundary. Configuration reads and mutations are audited. Reads of one's own history contain only one's own grant metadata.
+
+School-scoped grant and queue list responses also include `permissions.manageQueues`.
+This is computed from live authorization grants in the same checked transaction,
+independently of the latest-fifty personal history. A platform administrator
+without an explicit active QUEUE_MANAGER grant receives false. The field guides
+UI controls; it is not a token or substitute for per-mutation authorization.

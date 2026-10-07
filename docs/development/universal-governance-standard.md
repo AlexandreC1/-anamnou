@@ -4,6 +4,13 @@ Status: architecture and implementation requirements, October 6, 2026. This supe
 
 ## Universal foundation with jurisdiction-specific policies
 
+Delivered foundations: [MFA](mfa-delivery-2026-10-06.md),
+[scoped grants and review queues](governance-delivery-2026-10-06.md), and
+[the operator interface](governance-ui-delivery-2026-10-07.md).
+Jurisdiction policies, case processing, participation restrictions, independent
+appeals and privacy fulfillment remain planned; team configuration does not
+establish launch readiness or legal compliance.
+
 Apply privacy, safety, accessibility, tenant isolation and user rights throughout the product, across schools, universities, alumni groups and other approved educational organizations. Support adults, minors, guardians, staff, guests, administrators and mixed-age cohorts. Organization type must not weaken the baseline safeguards.
 
 Every deployment requires an accountable organization, assigned operational teams and reviewed jurisdiction profiles. Profiles specify applicable ages and authorization rules, notices and translations, lawful processing grounds, retention, transfer/residency requirements, rights deadlines, reporting duties and escalation contacts. Do not assume consent is the legal basis for every purpose or that school approval replaces guardian authorization. Unknown or conflicting jurisdiction requirements pause the affected processing or feature while a qualified reviewer resolves them; they must never silently choose the easiest policy. The platform safety floor cannot be weakened by an organization administrator.

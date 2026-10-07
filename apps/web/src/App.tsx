@@ -65,6 +65,9 @@ const YearbookReader = lazy(() =>
 const SecuritySettings = lazy(() =>
   routeModules.security().then((m) => ({ default: m.SecuritySettings })),
 );
+const GovernanceSettings = lazy(() =>
+  routeModules.governance().then((m) => ({ default: m.GovernanceSettings })),
+);
 
 type Locale = 'ht' | 'fr' | 'en' | 'es';
 const localeLabels: Record<Locale, string> = {
@@ -398,6 +401,10 @@ export function App() {
                 element={<SecuritySettings locale={locale} />}
               />
               <Route path="*" element={<NotFound locale={locale} />} />
+              <Route
+                path="/settings/governance"
+                element={<GovernanceSettings locale={locale} />}
+              />
             </Routes>
           </Suspense>
         </PageBoundary>

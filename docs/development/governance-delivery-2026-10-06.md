@@ -40,6 +40,10 @@ The real HTTP/database integration scenario passed. It exercises independently a
 
 ## What remains
 
+Update, October 7: the operator interface is delivered in
+[the review-team UI milestone](governance-ui-delivery-2026-10-07.md).
+The paragraph below records the remaining work at the end of this October 6 delivery.
+
 This milestone has configuration APIs, not an operator-facing governance UI or case-processing system. The immediate continuation is the operator interface: personal grants, administrative proposals/independent approval, scoped queue configuration and coverage warnings. Then implement case assignment and conflicts, independent appeal duties, jurisdiction policy versions, participation authorization, safeguarded evidence access, reporting and privacy fulfillment. Do not mistake a configured queue for a reviewed consent case or proof of legal compliance.
 
 Automated fallback routing and escalation, audit tamper resistance, bootstrap/recovery procedures, production infrastructure/offsite recovery and signed native verification remain open. Existing Claude MFA remains intact; native MFA on Android/iOS is still not claimed as verified. Voting and publication remain outside this change. Security review is required before merge, as stated in AGENTS.md.

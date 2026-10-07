@@ -95,23 +95,23 @@ export class GovernanceService {
     management = false,
   ) {
     const user = await this.actor(tx, actor);
-    // Platform operators administer grant configuration, never receive case access here.
-    if (
-      !management &&
-      actor.user.role === 'PLATFORM_ADMIN' &&
-      user.role === 'PLATFORM_ADMIN'
-    )
-      return;
-    const grant = await tx.governanceGrant.findFirst({
+    const grants = await tx.governanceGrant.findMany({
       where: {
         schoolId,
         userId: user.id,
         status: 'ACTIVE',
         expiresAt: { gt: new Date() },
-        ...(management ? { role: 'QUEUE_MANAGER' } : {}),
       },
+      select: { role: true },
     });
-    if (!grant) throw new NotFoundException();
+    const manager = grants.some((grant) => grant.role === 'QUEUE_MANAGER');
+    // Platform operators can inspect configuration; management still requires
+    // an explicit school grant. Do not derive this from a bounded history list.
+    const platform =
+      actor.user.role === 'PLATFORM_ADMIN' && user.role === 'PLATFORM_ADMIN';
+    if (management ? !manager : !platform && grants.length === 0)
+      throw new NotFoundException();
+    return manager;
   }
   request(
     actor: Actor,
@@ -236,7 +236,7 @@ export class GovernanceService {
   list(actor: Actor, schoolId: string, cursor?: string, queues = false) {
     return this.database.$transaction(async (tx) => {
       await this.lock(tx, schoolId, false);
-      await this.permission(tx, actor, schoolId);
+      const manageQueues = await this.permission(tx, actor, schoolId);
       const where = { schoolId, ...(cursor ? { id: { gt: cursor } } : {}) };
       const rows = queues
         ? await tx.reviewQueue.findMany({
@@ -292,7 +292,11 @@ export class GovernanceService {
         schoolId,
         schoolId,
       );
-      return { items, nextCursor: rows.length > 50 ? items.at(-1)!.id : null };
+      return {
+        items,
+        nextCursor: rows.length > 50 ? items.at(-1)!.id : null,
+        permissions: { manageQueues },
+      };
     });
   }
   async queue(
