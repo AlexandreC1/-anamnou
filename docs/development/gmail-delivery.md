@@ -2,7 +2,14 @@
 
 Current state: project `anamnou-account-mail` is created, Gmail API is enabled,
 and OAuth app configuration is created. The user selected their existing Gmail
-address as sender. OAuth client and offline authorization remain pending.
+address as sender. A replacement OAuth client and send-only offline authorization
+were created on October 7. A real verification message was accepted by Google
+and observed in the sender's inbox. The first unused client was deleted after
+its secret appeared in diagnostic output; the replacement was captured privately.
+On October 26, refreshing the saved authorization returned `invalid_grant`.
+Google still shows Test publication status, with publishing disabled until
+branding configuration is completed. Reauthorization and production settings
+remain required; the expired credential must not be treated as live-ready.
 Full `npm run check` passed with 125 tests; dependency audit found zero
 vulnerabilities. These checks use mocked Gmail responses and local Mailpit,
 not real Gmail inbox delivery.
@@ -16,7 +23,8 @@ Enable the Gmail API in a separate Google Cloud project. Configure an OAuth web
 client and obtain offline authorization from the dedicated sender with only
 `https://www.googleapis.com/auth/gmail.send`. No mailbox-reading scope is needed.
 Keep the authorization callback controlled; use state protection and PKCE in the
-provisioning flow. Sender authorization and refresh credentials are not provisioned.
+provisioning flow. Saved refresh credentials are currently invalid and must be
+replaced through authorization after the production setup is resolved.
 
 Google OAuth testing-mode credentials can expire after seven days. Confirm
 production consent settings and applicable verification requirements before launch.

@@ -11,11 +11,11 @@ yet. Resend is signed in but has no verified sending domain for Anamnou.
 Gidyo is a separate project and its domain must not be used for Anamnou.
 The mistakenly registered, unverified Resend entry was removed. No DNS records,
 nameservers or existing mail routing were changed, and no emails were sent.
-Anamnou retains its separate Pages address, namnou-preview.pages.dev.
+Anamnou retains its separate Pages address, `anamnou-preview.pages.dev`.
 The user selected Gmail API delivery to avoid buying a domain, and specified
 `charlesalexandrenick@gmail.com` as the sender. A separate Google Cloud project,
 `anamnou-account-mail` (Anamnou Account Mail), was created and its Gmail API enabled.
-OAuth client credentials, sender authorization and live recovery remain pending.
+Gmail client setup and a real inbox delivery check succeeded on October 7. The saved authorization returned invalid_grant on October 26; reauthorization and production OAuth configuration remain pending. Live password recovery is not yet verified.
 The Gmail adapter uses HTTPS with send-only OAuth, bounded timeouts and safe errors.
 The Render configuration now selects Gmail; storage region must be supplied from
 the actual storage connection rather than assuming R2's `auto` region.
