@@ -94,9 +94,6 @@ function YearbookScene({ locale, theme }: { locale: Locale; theme: string }) {
     <div className="demo-edition">
       <p className="sample-yearbook-label">{t.sample}</p>
       <div className="memory-stage" data-theme={theme}>
-        <div className="stage-orbit" aria-hidden="true" />
-        <div className="glass-pebble pebble-one" aria-hidden="true" />
-        <div className="glass-pebble pebble-two" aria-hidden="true" />
         <button
           type="button"
           className={'sculpture-book' + (open ? ' is-open' : '')}

@@ -39,14 +39,13 @@
   }
 }
 .site-collection {
-  --story-dark: oklch(24% 0.035 305);
   max-width: 1536px;
   padding: 20px clamp(20px, 4.5vw, 72px) 0;
   background: transparent;
 }
 .site-collection .site-header {
-  min-height: 72px;
-  padding: 12px 0;
+  min-height: 64px;
+  padding: 8px 0;
   border: 0;
   border-bottom: 1px solid var(--rule);
   border-radius: 0;
@@ -60,19 +59,6 @@
 .site-collection .wordmark span {
   color: inherit;
 }
-.site-collection a:visited {
-  color: inherit;
-}
-.site-collection .primary-link:visited {
-  color: var(--paper);
-}
-.collection-hero .intro {
-  color: var(--ink);
-}
-.sample-yearbook-label,
-.collection-hero .demo-photo-credits {
-  color: var(--ink);
-}
 .site-collection .site-header nav a {
   padding: 10px 12px;
   font-size: 0.78rem;
@@ -80,96 +66,96 @@
 .site-collection .site-header nav a[aria-current='page'] {
   background: var(--accent-soft);
 }
-.collection-dark {
-  padding: 0;
-  background: transparent;
-}
 .collection-hero {
+  --hero-ink: oklch(98% 0.012 58);
+  --hero-paper: oklch(23% 0.033 340);
+  --hero-outline: oklch(95% 0.016 58 / 0.55);
+  --hero-light-position: 78% 34%;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr);
   align-items: center;
-  gap: clamp(24px, 4vw, 64px);
-  padding: 56px 0 64px;
+  gap: clamp(16px, 3vw, 48px);
+  margin-block: 20px 32px;
+  padding: clamp(24px, 4vw, 60px);
+  border-radius: 18px;
+  color: var(--hero-ink);
+  background:
+    radial-gradient(
+      ellipse at var(--hero-light-position),
+      oklch(44% 0.095 18 / 0.72),
+      transparent 47%
+    ),
+    linear-gradient(125deg, oklch(20% 0.036 315), var(--hero-paper) 72%);
+}
+:root[data-anamnou-theme='lilac'] .collection-hero {
+  --hero-paper: oklch(31% 0.052 295);
+}
+:root[data-anamnou-theme='sage'] .collection-hero {
+  --hero-paper: oklch(30% 0.045 158);
 }
 .collection-hero .hero-copy {
   padding: 0;
   animation: none;
 }
-.collection-hero .hero-label {
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  color: var(--muted);
-  margin: 0 0 28px;
-  text-transform: none;
-}
 .collection-hero h1 {
   font-family: var(--display);
-  font-size: clamp(3rem, 5.1vw, 5.3rem);
-  font-weight: 600;
-  line-height: 1.03;
-  letter-spacing: -0.065em;
-  text-transform: none;
-  max-width: 13ch;
-  margin: 0 0 28px;
-  color: var(--ink);
-}
-.collection-hero h1 em {
-  color: var(--accent);
+  font-size: clamp(2.65rem, 5.25vw, 5.4rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.055em;
+  max-width: 12ch;
+  margin: 0 0 20px;
+  color: inherit;
+  text-wrap: balance;
 }
 .collection-hero .intro {
-  max-width: 42ch;
-  color: var(--ink);
-  font-size: 0.95rem;
-  line-height: 1.8;
+  max-width: 34ch;
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1.65;
 }
 .collection-hero .hero-actions {
-  margin-top: 32px;
-  gap: 12px 24px;
+  margin-top: 24px;
+  gap: 10px 12px;
 }
-.collection-hero .primary-link {
-  border-radius: 12px;
-  padding: 14px 20px;
-  color: var(--paper);
-  background: var(--story-dark);
-  font-size: 0.8rem;
+.collection-hero .primary-link,
+.collection-hero .hero-discover {
+  min-height: 48px;
+  border: 1px solid var(--hero-outline);
+  border-radius: 100px;
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
   box-shadow: none;
 }
-.collection-hero .primary-link:hover {
-  background: var(--accent);
-}
-.collection-hero .hero-discover {
+.collection-hero .primary-link,
+.collection-hero .primary-link:visited {
   color: var(--ink);
+  background: var(--hero-ink);
+  gap: 12px;
 }
-.collection-hero .hero-privacy {
-  color: var(--muted);
-  line-height: 1.6;
+.collection-hero .hero-discover,
+.collection-hero .hero-discover:visited {
+  color: var(--hero-ink);
+}
+.collection-hero a:focus-visible,
+.collection-hero .sculpture-book:focus-visible {
+  outline: 3px solid var(--hero-ink);
+  outline-offset: 4px;
 }
 .collection-hero .demo-edition {
   min-width: 0;
 }
 .sample-yearbook-label {
-  margin: 0 0 12px;
+  margin: 0 0 8px;
   text-align: center;
   font-size: 0.875rem;
   font-weight: 600;
 }
 .collection-hero .memory-stage {
   animation: none;
-  height: 510px;
-  border-radius: 48% 48% 28px 28px;
-  background: radial-gradient(
-    ellipse at 55% 38%,
-    oklch(98% 0.015 65),
-    var(--accent-soft) 70%
-  );
-}
-.collection-hero .stage-orbit {
-  width: 100%;
-  left: 0;
-  border-color: oklch(100% 0 0 / 0.8);
-}
-.collection-hero .glass-pebble {
-  display: none;
+  height: 484px;
+  background: transparent;
 }
 .collection-hero .sculpture-book {
   display: block;
@@ -181,7 +167,7 @@
   text-align: left;
   cursor: pointer;
   touch-action: manipulation;
-  top: 76px;
+  top: 77px;
   left: 24%;
   width: 61%;
   height: 340px;
@@ -190,10 +176,6 @@
 }
 .collection-hero .sculpture-book:hover {
   background: none;
-}
-.collection-hero .sculpture-book:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 8px;
 }
 .book-visual {
   position: absolute;
@@ -306,26 +288,22 @@
   right: 12px;
 }
 .book-tap-hint {
-  font-size: 0.7rem;
-  color: var(--ink);
-}
-.collection-hero .peek-button {
-  color: var(--ink);
-  background: var(--paper);
-  border: 1px solid var(--rule);
-  box-shadow: none;
+  font-size: 0.875rem;
 }
 .collection-hero .demo-photo-credits {
-  margin-top: 12px;
+  margin: 0;
   line-height: 1.6;
+  color: inherit;
+}
+.collection-hero .demo-photo-credits a {
+  color: inherit;
 }
 .site-collection .site-footer {
   margin-top: 0;
 }
 @media (max-width: 1000px) {
   .collection-hero {
-    gap: 24px;
-    padding-top: 40px;
+    gap: 20px;
   }
   .collection-hero .sculpture-book {
     left: 22%;
@@ -354,22 +332,28 @@
     min-height: 44px;
   }
   .collection-hero {
+    --hero-light-position: 50% 63%;
     grid-template-columns: minmax(0, 1fr);
-    padding: 36px 0 40px;
-    gap: 32px;
+    padding: 28px clamp(12px, 4vw, 24px) 24px;
+    gap: 28px;
+    margin-top: 12px;
   }
   .collection-hero h1 {
-    font-size: clamp(2.8rem, 11vw, 4.2rem);
-    max-width: 14ch;
-  }
-  .collection-hero .hero-label {
-    margin-bottom: 20px;
+    font-size: clamp(2.35rem, 8.8vw, 4.2rem);
   }
   .collection-hero .intro {
     font-size: 0.9rem;
   }
+  .collection-hero .hero-actions {
+    flex-direction: row;
+  }
+  .collection-hero .primary-link,
+  .collection-hero .hero-discover {
+    font-size: 0.8rem;
+    padding-inline: 12px;
+  }
   .collection-hero .memory-stage {
-    height: 430px;
+    height: 409px;
     max-width: 440px;
     margin: auto;
   }
