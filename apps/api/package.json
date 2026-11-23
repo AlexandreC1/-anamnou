@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.test.json --noEmit",
     "test": "tsc -p tsconfig.test.json && node --test dist-test/test/*.test.js",
-    "test:integration": "tsc -p tsconfig.test.json && node --env-file=../../.env --env-file=../../.env.test --test dist-test/test/*.integration.js"
+    "test:integration": "tsc -p tsconfig.test.json && node --env-file=../../.env --env-file=../../.env.test --test --test-concurrency=1 dist-test/test/*.integration.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.922.0",
