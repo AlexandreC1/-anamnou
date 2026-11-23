@@ -4,6 +4,7 @@ import {
   type OnModuleDestroy,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 import type { Database } from '../database.js';
 import type { IdentityMailer } from './mail.js';
 import { hashToken, newToken } from './security.js';
@@ -15,7 +16,7 @@ export class IdentityDelivery implements OnModuleInit, OnModuleDestroy {
   private stopped = false;
   constructor(
     private readonly database: Database,
-    private readonly mailer: IdentityMailer,
+    private readonly mailer: Pick<IdentityMailer, 'send'>,
   ) {}
   onModuleInit() {
     this.schedule();
@@ -92,19 +93,6 @@ export class IdentityDelivery implements OnModuleInit, OnModuleDestroy {
         claimed.purpose,
         token,
       );
-      await this.database.$transaction(async (tx) => {
-        const removed = await tx.identityEmailJob.deleteMany({
-          where: { id: claimed.id, leaseId },
-        });
-        if (removed.count)
-          await tx.auditLog.create({
-            data: {
-              actorUserId: claimed.userId,
-              targetId: claimed.userId,
-              action: 'auth.email_sent',
-            },
-          });
-      });
     } catch (error) {
       await this.database.$transaction(async (tx) => {
         await tx.identityToken.deleteMany({ where: { tokenHash } });
@@ -123,5 +111,29 @@ export class IdentityDelivery implements OnModuleInit, OnModuleDestroy {
         this.logger.error({ event: 'identity.delivery_dead_letter' });
       throw error;
     }
+
+    // The provider accepted the message. A database error from here on must
+    // never run the send-failure cleanup and invalidate the delivered link.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        await this.database.$transaction(async (tx) => {
+          const removed = await tx.identityEmailJob.deleteMany({
+            where: { id: claimed.id, leaseId },
+          });
+          if (removed.count)
+            await tx.auditLog.create({
+              data: {
+                actorUserId: claimed.userId,
+                targetId: claimed.userId,
+                action: 'auth.email_sent',
+              },
+            });
+        });
+        return;
+      } catch {
+        if (attempt === 0) await delay(250);
+      }
+    }
+    this.logger.error({ event: 'identity.delivery_acknowledgment_failed' });
   }
 }
