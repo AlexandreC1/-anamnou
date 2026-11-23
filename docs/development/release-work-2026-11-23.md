@@ -58,17 +58,39 @@ database. This proves the local restore procedure, not automated production
 backups or production recovery objectives. Local web and API readiness both
 returned 200 at `http://127.0.0.1:3000/` and port 4000 respectively.
 
+The Linux deployment image built successfully from commit `3cc85bd`. Its API
+started with the actual restricted Neon connection and private storage under
+512 MB memory and 0.1 CPU limits. `/ready` returned 200; sampled memory was
+approximately 124 MB. The temporary container was stopped and its temporary
+environment file removed. This is a startup check, not an upload load test or
+live email verification.
+
+[GitHub CI for commit 3cc85bd](https://github.com/AlexandreC1/-anamnou/actions/runs/45232988418)
+also passed both verification and dependency-audit jobs on Linux, including the
+desktop/mobile browser suite. Security-sensitive changes remain on the feature
+branch and require review before merge.
+
+## Operator information
+
+The user identified the operator as **Anamomou org** on November 23. This records
+the supplied name, not a verification of legal registration. Google's existing
+support address is `charlesalexandrenick@gmail.com`, also the user-selected mail
+sender. Draft notices can use these details, but reviewed processing rules and
+actual operational coverage still have to be supplied. Names/work emails for
+separate primary and backup reviewers have been requested. The user volunteered
+as primary; no independent backup has been nominated and no invitations sent.
+
 ## Remaining release gates
 
-- Identify the accountable operator, support contact, reviewer team and reviewed
-  pilot policy. The user was asked for the organization and contact while
-  implementation continued. Do not fabricate these or silently reuse Gidyo.
+- Establish the real reviewer team and reviewed pilot policy for the named
+  operator. Do not fabricate people or silently reuse Gidyo.
 - Complete protected evidence access/retention, independent appeals, safeguarding
   reports and subject-scoped privacy fulfillment.
 - Publish accurate, operator-reviewed notices and terms. A request for review is
   not itself guardian consent or legal authorization for all processing.
-- Finish durable Gmail production authorization; prior saved test-mode credentials
-  were invalid on the last check. Do not describe the old inbox test as live reset.
+- Finish durable Gmail production authorization. A fresh November 23 refresh
+  attempt returned HTTP 400 `invalid_grant`; the saved credentials remain invalid.
+  Do not describe the old inbox test as live reset.
 - Deploy Render Free, verify health, enable the Cloudflare API connection and
   run real registration, verification, reset and upload journeys.
 - Complete publication approval and immutable historical editions, final security
