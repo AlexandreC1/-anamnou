@@ -8,7 +8,8 @@ import {
   type ReactNode,
 } from 'react';
 import { Link, NavLink, Route, Routes, useLocation } from 'react-router';
-import { identityCopy } from './identity-copy';
+import { localeLabels } from './identity-copy';
+import { settingsCopy } from './settings-copy';
 import { publicCopy } from './public-copy';
 
 import { classCopy } from './class-copy';
@@ -18,6 +19,7 @@ import './yearbook.css';
 import { LandingPage } from './LandingPage';
 import './prism.css';
 import './collection.css';
+import './account-area.css';
 import { apiFetch } from './api-transport';
 import { NativeNavigation } from './NativeNavigation';
 
@@ -26,6 +28,9 @@ import { AppearanceSettings, type AnamnouTheme } from './AppearanceSettings';
 import { preloadRoute, routeModules } from './route-preload';
 const AccountPage = lazy(() =>
   routeModules.identity().then((m) => ({ default: m.AccountPage })),
+);
+const SettingsPage = lazy(() =>
+  routeModules.settings().then((m) => ({ default: m.SettingsPage })),
 );
 const IdentityForm = lazy(() =>
   routeModules.identity().then((m) => ({ default: m.IdentityForm })),
@@ -81,12 +86,6 @@ const ParticipationReview = lazy(() =>
 );
 
 type Locale = 'ht' | 'fr' | 'en' | 'es';
-const localeLabels: Record<Locale, string> = {
-  ht: 'Kreyòl ayisyen',
-  fr: 'Français',
-  en: 'English',
-  es: 'Español',
-};
 type Copy = {
   skip: string;
   nav: string;
@@ -314,16 +313,8 @@ export function App() {
           </NavLink>
           <NavLink to="/about">{selected.idea}</NavLink>
           <NavLink to="/classes">{classCopy[locale].myClasses}</NavLink>
-          <NavLink to="/profile">{identityCopy[locale].account}</NavLink>
-          <NavLink to="/settings/appearance">
-            {locale === 'fr'
-              ? 'Apparence'
-              : locale === 'ht'
-                ? 'Aparans'
-                : locale === 'es'
-                  ? 'Apariencia'
-                  : 'Appearance'}
-          </NavLink>
+          <NavLink to="/profile">{settingsCopy[locale].profile}</NavLink>
+          <NavLink to="/settings">{settingsCopy[locale].title}</NavLink>
         </nav>
         <LanguageChoice locale={locale} onChange={setLocale} />
       </header>
@@ -385,6 +376,12 @@ export function App() {
               <Route
                 path="/"
                 element={<LandingPage locale={locale} theme={theme} />}
+              />
+              <Route
+                path="/settings"
+                element={
+                  <SettingsPage locale={locale} onLocaleChange={setLocale} />
+                }
               />
               <Route
                 path="/settings/appearance"

@@ -1,5 +1,6 @@
 import type { Locale } from './identity-copy';
 import { Link } from 'react-router';
+import { settingsCopy } from './settings-copy';
 
 export type AnamnouTheme = 'coral' | 'lilac' | 'sage';
 
@@ -126,8 +127,8 @@ export function AppearanceSettings({
           {t.options[theme][0]} · {t.selected}
         </p>
       </div>
-      <Link className="appearance-back" to="/">
-        {t.back}
+      <Link className="appearance-back" to="/settings">
+        {settingsCopy[locale].back}
       </Link>
     </section>
   );

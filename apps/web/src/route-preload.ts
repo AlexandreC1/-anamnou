@@ -1,6 +1,7 @@
 // Only public application code is warmed; account and class data remain uncached.
 export const routeModules = {
   identity: () => import('./Identity'),
+  settings: () => import('./SettingsPage'),
   classes: () => import('./Classes'),
   manage: () => import('./ClassManage'),
   profile: () => import('./MemberProfile'),
@@ -16,6 +17,7 @@ export function routeModule(
   path: string,
 ): keyof typeof routeModules | undefined {
   if (path === '/settings/security') return 'security';
+  if (path === '/settings') return 'settings';
   if (path === '/settings/governance') return 'governance';
   if (path === '/settings/participation') return 'participation';
   if (path === '/settings/participation/review') return 'participationReview';

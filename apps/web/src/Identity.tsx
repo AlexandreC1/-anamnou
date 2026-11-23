@@ -1,11 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { participationCopy } from './participation-copy';
 import { Link, useNavigate } from 'react-router';
-import { identityCopy, type Locale } from './identity-copy';
-import { classCopy } from './class-copy';
+import { identityCopy, localeLabels, type Locale } from './identity-copy';
 import { deliveryCopy } from './delivery-copy';
-import { securityLabels } from './SecuritySettings';
-import { governanceCopy } from './governance-copy';
+import { settingsCopy } from './settings-copy';
 import {
   ApiError,
   identityRequest,
@@ -298,6 +295,7 @@ export function IdentityForm({ mode, locale }: { mode: Mode; locale: Locale }) {
 
 export function AccountPage({ locale }: { locale: Locale }) {
   const t = identityCopy[locale];
+  const settings = settingsCopy[locale];
   const navigate = useNavigate();
   const [account, setAccount] = useState<Account | null>(null);
   const [error, setError] = useState('');
@@ -308,6 +306,7 @@ export function AccountPage({ locale }: { locale: Locale }) {
     const controller = new AbortController();
     void identityRequest('/me', undefined, 'GET', controller.signal)
       .then((value) => {
+        if (controller.signal.aborted) return;
         setAccount(readAccount(value));
         setError('');
       })
@@ -362,73 +361,80 @@ export function AccountPage({ locale }: { locale: Locale }) {
     }
   }
   return (
-    <section className="identity-layout">
-      <div className="identity-intro">
-        <p className="eyebrow">Anamnou</p>
-        <h1>{t.account}</h1>
-        <p className="intro">{t.profileIntro}</p>
-      </div>
-      <div className="identity-panel">
+    <section className="account-area" aria-labelledby="profile-title">
+      <h1 id="profile-title">{settings.profile}</h1>
+      <div className="account-card profile-card">
         {error && <p role="alert">{error}</p>}
         {!account ? (
           error ? (
-            <button onClick={() => setAttempt(attempt + 1)}>{t.retry}</button>
+            <button
+              type="button"
+              onClick={() => {
+                setError('');
+                setAttempt((previous) => previous + 1);
+              }}
+            >
+              {t.retry}
+            </button>
           ) : (
             <p role="status">{t.loading}</p>
           )
         ) : (
           <>
-            <p>{account.email}</p>
+            <h2>{settings.details}</h2>
+            <dl className="profile-email">
+              <dt>{t.email}</dt>
+              <dd>
+                {account.email} <span>{settings.verified}</span>
+              </dd>
+            </dl>
             <form
               className="account-form"
               onSubmit={(event) => void save(event)}
+              onChange={() => setSaved(false)}
             >
-              <label>
-                {t.name}
-                <input
-                  key={account.id}
-                  name="displayName"
-                  defaultValue={account.displayName}
-                  autoComplete="nickname"
-                  required
-                  maxLength={80}
-                />
-              </label>
-              <label>
-                {t.language}
-                <select name="locale" defaultValue={account.locale}>
-                  <option value="ht">Kreyòl ayisyen</option>
-                  <option value="fr">Français</option>
-                  <option value="en">English</option>
-                  <option value="es">Español</option>
-                </select>
-              </label>
-              <button disabled={busy}>{busy ? t.busy : t.save}</button>
+              <fieldset disabled={busy}>
+                <label>
+                  {t.name}
+                  <input
+                    key={account.id}
+                    name="displayName"
+                    defaultValue={account.displayName}
+                    autoComplete="nickname"
+                    required
+                    maxLength={80}
+                  />
+                </label>
+                <label>
+                  {t.language}
+                  <select name="locale" defaultValue={account.locale}>
+                    {(Object.keys(localeLabels) as Locale[]).map((option) => (
+                      <option key={option} value={option}>
+                        {localeLabels[option]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button>{busy ? t.busy : t.save}</button>
+              </fieldset>
             </form>
             {saved && <p role="status">{t.saved}</p>}
-            <div className="account-links">
-              <Link to="/settings/participation">
-                {participationCopy[locale].title}
-              </Link>
-              <Link to="/settings/security">
-                {securityLabels[locale].title}
-              </Link>
-              <Link to="/classes">{classCopy[locale].myClasses}</Link>
-              <Link to="/settings/governance">
-                {governanceCopy[locale].title}
-              </Link>
-              <Link to="/forgot-password">{t.reset}</Link>
-              <button
-                className="secondary-button"
-                disabled={busy}
-                onClick={() => void logout()}
-              >
-                {t.logout}
-              </button>
-            </div>
           </>
         )}
       </div>
+      {account && (
+        <div className="profile-actions">
+          <Link to="/forgot-password">{t.recover}</Link>
+          <button
+            type="button"
+            className="secondary-button"
+            disabled={busy}
+            onClick={() => void logout()}
+          >
+            {t.logout}
+          </button>
+        </div>
+      )}
     </section>
   );
 }

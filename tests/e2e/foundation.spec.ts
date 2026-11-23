@@ -15,7 +15,7 @@ test('a slow page download keeps navigation available and announces loading', as
   try {
     await expect(page.getByRole('status')).toHaveText('Loading…');
     await expect(
-      page.getByRole('link', { name: 'Appearance', exact: true }),
+      page.getByRole('link', { name: 'Settings', exact: true }),
     ).toBeVisible();
   } finally {
     release();
@@ -38,10 +38,10 @@ test('link intent warms page code without fetching private account data', async 
   const loaded = page.waitForResponse((response) =>
     /\/assets\/Identity-[^/]+\.js$/.test(new URL(response.url()).pathname),
   );
-  await page.getByRole('link', { name: 'My account', exact: true }).focus();
+  await page.getByRole('link', { name: 'Profile', exact: true }).focus();
   expect((await loaded).ok()).toBe(true);
   expect(accountRequests).toEqual([]);
-  await page.getByRole('link', { name: 'My account', exact: true }).click();
+  await page.getByRole('link', { name: 'Profile', exact: true }).click();
   // Anonymous visitors are redirected after the fresh account request returns 401.
   await expect(page).toHaveURL(/\/login$/);
   await expect(

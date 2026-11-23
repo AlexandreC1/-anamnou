@@ -23,6 +23,9 @@ feed, school management system or shopping service.
 - Schools, classes, memberships, roles and invitation acceptance.
 - Profiles, quotes, validated photo uploads, yearbook sections, editing and reader.
 - Four interface languages: English, French, Haitian Creole and Spanish.
+- Settings at `/settings` groups device language, appearance and account controls.
+  Profile at `/profile` shows the verified email and saves the display name and
+  preferred email language through the authenticated account API.
 - Governance grants/queues, independent participation policy approval, assigned
   participation reviews, withdrawal and production content restrictions.
 - Responsive interface and mobile packaging work; store-release readiness still
@@ -45,6 +48,10 @@ cover. Its link to the class chooser is labeled Open your class yearbook.
   passed production-resource readiness at 512 MB / 0.1 CPU limits.
 - Gmail sender was selected by the user. Its saved OAuth refresh credential
   currently fails with `invalid_grant`. Live recovery does not work yet.
+  Once a provider accepts a message, a failure recording its receipt retries
+  the database write without immediately revoking the delivered link. A longer
+  database interruption can still cause a new link after the delivery lease
+  expires. This change does not renew provider credentials.
 - Budget is $0. Do not silently enable paid hosting, R2 or purchase a domain.
 
 ## Release blockers

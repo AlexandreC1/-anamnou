@@ -1,0 +1,141 @@
+.account-area {
+  display: grid;
+  gap: 28px;
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding-block: clamp(32px, 5vw, 64px);
+}
+.account-area h1,
+.account-area h2 {
+  margin: 0;
+}
+.account-area h1 {
+  font-size: clamp(2.4rem, 5vw, 3.5rem);
+  line-height: 1.05;
+}
+.account-area h2 {
+  font-size: 1.18rem;
+}
+.account-group {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.account-card {
+  min-width: 0;
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  background: var(--paper);
+}
+.settings-row,
+.settings-language {
+  padding: 16px clamp(16px, 4vw, 24px);
+}
+.settings-row {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding-inline-end: 42px;
+}
+.settings-row a {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+.settings-row a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+}
+.settings-row a:focus-visible {
+  outline: none;
+}
+.settings-row a:focus-visible::after {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+}
+.settings-row::after {
+  content: '';
+  position: absolute;
+  inset-inline-end: 24px;
+  top: calc(50% - 4px);
+  width: 8px;
+  height: 8px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+.settings-row:hover a,
+.settings-row a:focus-visible {
+  text-decoration: underline;
+}
+.settings-row p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.account-card > * + .settings-row {
+  border-top: 1px solid var(--rule);
+}
+.settings-language,
+.profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+.settings-language {
+  font-weight: 600;
+}
+.settings-language select {
+  min-height: 44px;
+  max-width: 100%;
+  font: inherit;
+  font-weight: 400;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--paper);
+  padding: 8px;
+}
+.profile-card {
+  padding: clamp(16px, 4vw, 32px);
+}
+.profile-card p {
+  overflow-wrap: anywhere;
+}
+.profile-email {
+  margin: 24px 0;
+}
+.profile-email dt,
+.profile-email span {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.profile-email dd {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+.profile-email span {
+  display: inline-block;
+  margin-inline-start: 8px;
+}
+.profile-card fieldset {
+  display: grid;
+  gap: 20px;
+  min-inline-size: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.profile-card fieldset button {
+  justify-self: start;
+}
+.profile-actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}

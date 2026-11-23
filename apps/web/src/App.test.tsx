@@ -16,11 +16,11 @@ describe('foundation shell', () => {
     expect(
       screen.queryByRole('button', { name: 'Coral' }),
     ).not.toBeInTheDocument();
-    // Theme settings are reached from the main navigation only.
     expect(
       screen.queryByRole('link', { name: 'Customize your theme' }),
     ).not.toBeInTheDocument();
-    await user.click(screen.getByRole('link', { name: 'Appearance' }));
+    await user.click(screen.getByRole('link', { name: 'Settings' }));
+    await user.click(await screen.findByRole('link', { name: 'Appearance' }));
     expect(
       screen.getByRole('heading', { name: 'Your appearance' }),
     ).toBeVisible();

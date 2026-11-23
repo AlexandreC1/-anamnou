@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { identityRequest } from './identity-api';
+import { ApiError, identityRequest } from './identity-api';
 import type { Locale } from './identity-copy';
 import { MfaSettings } from './MfaSettings';
 
@@ -98,14 +98,18 @@ export function SecuritySettings({ locale }: { locale: Locale }) {
     const controller = new AbortController();
     void identityRequest('/me/sessions', undefined, 'GET', controller.signal)
       .then((value) => {
+        if (controller.signal.aborted) return;
         setSessions(readSessions(value));
         setError(false);
       })
-      .catch(() => {
-        if (!controller.signal.aborted) setError(true);
+      .catch((caught: unknown) => {
+        if (controller.signal.aborted) return;
+        if (caught instanceof ApiError && caught.status === 401)
+          navigate('/login', { replace: true });
+        else setError(true);
       });
     return () => controller.abort();
-  }, [attempt]);
+  }, [attempt, navigate]);
   async function revoke(session?: Session) {
     setBusy(true);
     setError(false);

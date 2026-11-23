@@ -29,6 +29,34 @@ test('real registration, inbox verification, login, profile, logout and password
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page).toHaveURL(/\/profile$/);
+  await expect(
+    page.getByRole('heading', { name: 'Profile', exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText(email, { exact: false })).toBeVisible();
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+  await page
+    .getByRole('combobox', { name: 'App language', exact: true })
+    .selectOption('ht');
+  await expect(
+    page.getByRole('heading', { name: 'Paramèt', exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole('combobox', { name: 'Lang aplikasyon an', exact: true }),
+  ).toHaveValue('ht');
+  await page
+    .getByRole('combobox', { name: 'Lang aplikasyon an', exact: true })
+    .selectOption('en');
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: 'test-results/settings-' + test.info().project.name + '.png',
+    fullPage: true,
+  });
   await page.getByRole('link', { name: 'Review teams', exact: true }).click();
   await expect(page).toHaveURL(/\/settings\/governance$/);
   await expect(
@@ -48,12 +76,15 @@ test('real registration, inbox verification, login, profile, logout and password
   await page
     .getByLabel('Display name')
     .fill('<script>window.injected = true</script>');
+  await page.getByLabel('Preferred email language').selectOption('fr');
   await page.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByRole('status')).toHaveText('Your changes are saved.');
   await page.reload();
   await expect(page.getByLabel('Display name')).toHaveValue(
     '<script>window.injected = true</script>',
   );
+  await expect(page.getByLabel('Preferred email language')).toHaveValue('fr');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   expect(await page.evaluate(() => 'injected' in window)).toBe(false);
   expect(
     await page.evaluate(() => document.cookie.includes('yearbook_session')),
@@ -81,6 +112,7 @@ test('real registration, inbox verification, login, profile, logout and password
   await page.getByLabel('Password', { exact: true }).fill(replacement);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page).toHaveURL(/\/profile$/);
+  await expect(page.getByLabel('Display name')).toBeVisible();
   await page.screenshot({
     path: 'test-results/identity-' + test.info().project.name + '.png',
     fullPage: true,

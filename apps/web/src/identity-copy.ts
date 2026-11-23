@@ -1,4 +1,10 @@
 export type Locale = 'ht' | 'fr' | 'en' | 'es';
+export const localeLabels: Record<Locale, string> = {
+  ht: 'Kreyòl ayisyen',
+  fr: 'Français',
+  en: 'English',
+  es: 'Español',
+};
 const en = {
   account: 'My account',
   register: 'Create your account',
