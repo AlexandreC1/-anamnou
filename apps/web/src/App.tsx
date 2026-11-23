@@ -243,6 +243,18 @@ function LanguageChoice({
           </option>
         ))}
       </select>
+      <svg
+        className="language-chevron"
+        aria-hidden="true"
+        width="12"
+        height="12"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      >
+        <path d="m4 6 4 4 4-4" />
+      </svg>
     </label>
   );
 }
@@ -372,9 +384,7 @@ export function App() {
               <Route path="/join" element={<JoinClass locale={locale} />} />
               <Route
                 path="/"
-                element={
-                  <Home selected={selected} locale={locale} theme={theme} />
-                }
+                element={<LandingPage locale={locale} theme={theme} />}
               />
               <Route
                 path="/settings/appearance"
@@ -434,23 +444,14 @@ export function App() {
           </Suspense>
         </PageBoundary>
       </main>
-      <footer className="site-footer">
-        <p>{selected.footer}</p>
-        <Link to="/connection">{selected.status}</Link>
-      </footer>
+      {pathname !== '/' && (
+        <footer className="site-footer">
+          <p>{selected.footer}</p>
+          <Link to="/connection">{selected.status}</Link>
+        </footer>
+      )}
     </div>
   );
-}
-function Home({
-  selected,
-  locale,
-  theme,
-}: {
-  selected: Copy;
-  locale: Locale;
-  theme: AnamnouTheme;
-}) {
-  return <LandingPage locale={locale} selected={selected} theme={theme} />;
 }
 function About({ locale }: { locale: Locale }) {
   const t = publicCopy[locale];

@@ -1,59 +1,52 @@
-# Plug collection reference, November 23, 2026
+# Homepage direction, November 23, 2026
 
-The creator requested the design of
-[Plug's Black Friday collection](https://www.plug.tech/collections/black-friday-deals).
-This adapts its visual composition to Anamnou's existing yearbook product.
+The creator supplied Plug's Black Friday collection as inspiration and clarified
+that it should not be reproduced literally. They also rejected decorative
+multicolor text, italics, repeated actions and unnecessary marketing information.
 
-## Delivered design
+## Current result
 
-- Compact white homepage navigation with all existing account, class, language
-  and appearance destinations retained.
-- Full-width dark hero, orange atmospheric background, curved contour lines,
-  bold uppercase purple/white heading and pill-shaped primary action.
-- Existing interactive 3D yearbook, original Anamnou copy and credited Haitian
-  graduation photography. Opening the cover reveals a readable sample page;
-  the decorative note moves out of the way.
-- Four hanging illustrated tags: three navigate to the corresponding feature
-  explanation; the fourth opens the actual invitation-acceptance screen.
-- Clean image-led feature cards and a dark closing invitation/footer.
-- Phone layouts, visible keyboard focus and reduced-motion support. Essential
-  hero content renders immediately rather than starting transparent.
+The homepage contains a plain product heading, one explanatory sentence, Create
+Class and Join Class actions, and the existing interactive sample yearbook. Photo
+attribution and the sample label remain to identify the source and illustrated
+nature of the book. Existing class, account, language and appearance navigation
+remain available.
 
-No Plug logo, commercial copy, product images, shopping functionality, invented
-prices, testimonials or class data were introduced. The homepage continues to
-identify the book as an illustrated edition. Authentication, participation
-restrictions, API deployment and launch status are unchanged.
+Removed the hanging gift tags, campaign contours, sale-style typography, colored
+heading emphasis, decorative note, slogans, repeated feature sections and closing
+call to action. The reference informs visual hierarchy and spacing; Anamnou keeps
+its own warm palette and yearbook composition. Interface heading and body text
+use the same ink color and normal font style. Existing appearance preferences
+continue to affect the book.
 
-## Source files
+The language selector now uses the same Public Sans typography as navigation,
+fits its selected label and retains a 44-pixel touch target. English measured
+approximately 78 pixels wide. Native selection and four-language persistence
+remain intact. The book cover now has front and reverse faces on a hinged leaf;
+opening reveals a connected two-page spread with the cover lining, spine and
+page edges visible. Closing reverses the same transition. Reduced motion skips
+the animation without changing the open/closed states.
 
-- `.impeccable.md`: updated creator direction.
-- `apps/web/src/App.tsx`: homepage-specific shell and stylesheet import.
-- `apps/web/src/LandingPage.tsx`: contour artwork, semantic category navigation,
-  section targets and accessible spacing in the headline.
-- `apps/web/src/collection.css`: scoped responsive design and preview treatment.
-- `apps/web/src/main.tsx`: locally served Public Sans 800 from the existing font
-  package; no new dependency or remote font request.
-- `apps/web/src/ClassCommon.tsx` and `apps/web/src/Classes.tsx`: follow-up fix for
-  the creator's reported duplicate back link. Pages that already provide their
-  own return link suppress the shared error panel's copy. A 401 shows one sign-in
-  action; retry remains available for actual load failures.
+## Implementation
 
-## Verification record
+- `apps/web/src/LandingPage.tsx`: concise four-language copy and focused actions.
+- `apps/web/src/collection.css`: scoped responsive styling and readable preview.
+- `apps/web/src/App.tsx`: direct homepage component and no marketing footer there.
+- `apps/web/src/main.tsx`: removed the extra font weight from the initial pass.
+- `.impeccable.md`: creator corrections recorded for future design work.
+- Existing frontend/browser checks updated for the actual labels and navigation.
 
-Manual browser checks verified tag-to-section navigation, the invitation
-destination, cover open/close state, readable sample-page contrast and no
-horizontal overflow at 320 pixels in English, French, Haitian Creole and Spanish.
-Desktop and phone compositions were inspected visually.
+The earlier duplicate Back to my classes fix remains in place. These changes do
+not alter authentication, authorization or deployment configuration.
 
-`npm run check` passed all 129 tests, lint, formatting, type checks and build.
-After final preview-contrast refinements and the reported duplicate-link fix,
-lint, frontend type checks, all 42 frontend tests, frontend build and both
-desktop/mobile visual journeys passed again. `npm audit --audit-level=high`
-reported zero vulnerabilities. Local web and API readiness returned 200.
+## Verification
 
-The browser confirmed one back link, one sign-in action and no retry button on
-the signed-out Create Class screen. The same duplicate-link composition was
-corrected in School Manage and Class Home. No server authorization changed.
+Lint, all 42 frontend tests, frontend type checking and production build passed.
+The browser confirmed normal heading font style, identical heading/body ink,
+zero emphasis elements, a single My Class navigation link and no horizontal
+overflow at 320 pixels in all four languages. All 12 desktop/mobile navigation
+and visual tests passed, including page loading, preloading without private-data
+requests, route recovery, keyboard access and reduced motion.
 
-The service's outstanding release blockers remain in the
+The application's outstanding release blockers remain in the
 [release work record](release-work-2026-11-23.md).

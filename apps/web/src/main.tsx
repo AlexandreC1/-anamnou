@@ -5,7 +5,6 @@ import '@fontsource/literata/latin-400.css';
 import '@fontsource/literata/latin-400-italic.css';
 import '@fontsource/public-sans/latin-400.css';
 import '@fontsource/public-sans/latin-600.css';
-import '@fontsource/public-sans/latin-800.css';
 import '@fontsource/bricolage-grotesque/latin-600.css';
 import '@fontsource/bricolage-grotesque/latin-700.css';
 import './styles.css';

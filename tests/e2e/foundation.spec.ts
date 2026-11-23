@@ -58,9 +58,9 @@ test('reader navigates real routes, reloads, and checks the real API', async ({
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Some chapters',
+    'A yearbook for your class.',
   );
-  await page.getByRole('link', { name: 'Discover the idea' }).click();
+  await page.getByRole('link', { name: 'The idea' }).click();
   await expect(page).toHaveURL(/\/about$/);
   await page.reload();
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
@@ -104,6 +104,6 @@ test('keyboard skip link, unknown route and reduced motion work', async ({
   ).toBeVisible();
   await page.getByRole('link', { name: 'Return home' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Some chapters',
+    'A yearbook for your class.',
   );
 });

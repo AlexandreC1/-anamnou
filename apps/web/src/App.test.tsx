@@ -37,16 +37,16 @@ describe('foundation shell', () => {
       'lilac',
     );
     await user.click(
-      screen.getByRole('button', { name: 'Take a peek inside' }),
+      screen.getByRole('button', { name: 'Preview the yearbook' }),
     );
-    const close = screen.getByRole('button', { name: 'Back to the cover' });
+    const close = screen.getByRole('button', { name: 'Close preview' });
     expect(close).toHaveAttribute('aria-expanded', 'true');
     await user.click(close);
     expect(
-      screen.getByRole('button', { name: 'Take a peek inside' }),
+      screen.getByRole('button', { name: 'Preview the yearbook' }),
     ).toHaveAttribute('aria-expanded', 'false');
     for (const link of screen.getAllByRole('link', {
-      name: 'Start your class story',
+      name: 'Create a class',
     })) {
       expect(link).toHaveAttribute('href', '/classes/new');
     }
@@ -75,11 +75,9 @@ describe('foundation shell', () => {
       </MemoryRouter>,
     );
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'Some chapters',
+      'A yearbook for your class.',
     );
-    await userEvent.click(
-      screen.getByRole('link', { name: /Discover the idea/ }),
-    );
+    await userEvent.click(screen.getByRole('link', { name: /^The idea$/ }));
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'A yearbook worth',
     );
@@ -146,10 +144,10 @@ describe('foundation shell', () => {
       name: 'Language / Lang / Langue / Idioma',
     });
     for (const [option, heading] of [
-      ['ht', 'Gen chapit'],
-      ['fr', 'Certains chapitres'],
-      ['en', 'Some chapters'],
-      ['es', 'Algunos capítulos'],
+      ['ht', 'Yon liv pou klas ou.'],
+      ['fr', 'Un album pour votre classe.'],
+      ['en', 'A yearbook for your class.'],
+      ['es', 'Un anuario para tu clase.'],
     ] as const) {
       await user.selectOptions(language, option);
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(

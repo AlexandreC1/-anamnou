@@ -15,9 +15,7 @@ test('opening page remains readable across viewport sizes', async ({
     ),
   ).toBe(true);
   await page.setViewportSize({ width: 320, height: 700 });
-  await expect(
-    page.getByRole('link', { name: 'Discover the idea' }),
-  ).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Join a class' })).toBeVisible();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
