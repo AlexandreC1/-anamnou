@@ -7,7 +7,14 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { Link, NavLink, Route, Routes, useLocation } from 'react-router';
+import {
+  Link,
+  Navigate,
+  NavLink,
+  Route,
+  Routes,
+  useLocation,
+} from 'react-router';
 import { localeLabels } from './identity-copy';
 import { settingsCopy } from './settings-copy';
 import { publicCopy } from './public-copy';
@@ -90,7 +97,6 @@ type Copy = {
   skip: string;
   nav: string;
   home: string;
-  idea: string;
   connection: string;
   footer: string;
   status: string;
@@ -98,7 +104,6 @@ type Copy = {
   titleA: string;
   titleB: string;
   intro: string;
-  discover: string;
   note: string;
 };
 const copy: Record<Locale, Copy> = {
@@ -106,7 +111,6 @@ const copy: Record<Locale, Copy> = {
     skip: 'Ale nan kontni an',
     nav: 'Navigasyon prensipal',
     home: 'Akèy',
-    idea: 'Lide a',
     connection: 'Koneksyon',
     footer: 'Yon chapit fini. Yon istwa rete.',
     status: 'Tcheke koneksyon',
@@ -115,14 +119,12 @@ const copy: Record<Locale, Copy> = {
     titleB: 'ki rete avèk nou.',
     intro:
       'Moun yo. Ti moman yo. Bagay nou pa janm vle bliye. Yon kay pou istwa klas k ap gradye nou an.',
-    discover: 'Dekouvri lide a',
     note: 'Premye edisyon an ap pran fòm. Kreye klas ou epi envite kamarad ou yo.',
   },
   fr: {
     skip: 'Aller au contenu',
     nav: 'Navigation principale',
     home: 'Accueil',
-    idea: "L'idée",
     connection: 'Connexion',
     footer: 'Un chapitre se termine. Une histoire reste.',
     status: 'État de la connexion',
@@ -131,14 +133,12 @@ const copy: Record<Locale, Copy> = {
     titleB: 'restent avec nous.',
     intro:
       'Les personnes. Les petits moments. Ce que nous ne voulons jamais oublier. Un lieu pour raconter la classe qui obtient son diplôme.',
-    discover: "Découvrir l'idée",
     note: 'La première édition prend forme. Créez votre classe et invitez vos camarades.',
   },
   en: {
     skip: 'Skip to content',
     nav: 'Main navigation',
     home: 'Home',
-    idea: 'The idea',
     connection: 'Connection',
     footer: 'A chapter ends. A story remains.',
     status: 'Connection status',
@@ -147,14 +147,12 @@ const copy: Record<Locale, Copy> = {
     titleB: 'stay with us.',
     intro:
       'The people. The small moments. The things we never want to forget. A home for the story of your graduating class.',
-    discover: 'Discover the idea',
     note: 'The first edition is taking shape. Create your class and invite your classmates.',
   },
   es: {
     skip: 'Ir al contenido',
     nav: 'Navegación principal',
     home: 'Inicio',
-    idea: 'La idea',
     connection: 'Conexión',
     footer: 'Un capítulo termina. Una historia permanece.',
     status: 'Estado de conexión',
@@ -163,7 +161,6 @@ const copy: Record<Locale, Copy> = {
     titleB: 'se quedan con nosotros.',
     intro:
       'Las personas. Los pequeños momentos. Lo que nunca queremos olvidar. Un hogar para la historia de tu clase graduada.',
-    discover: 'Descubre la idea',
     note: 'La primera edición está tomando forma. Crea tu clase e invita a tus compañeros.',
   },
 };
@@ -311,7 +308,6 @@ export function App() {
           <NavLink to="/" end>
             {selected.home}
           </NavLink>
-          <NavLink to="/about">{selected.idea}</NavLink>
           <NavLink to="/classes">{classCopy[locale].myClasses}</NavLink>
           <NavLink to="/profile">{settingsCopy[locale].profile}</NavLink>
           <NavLink to="/settings">{settingsCopy[locale].title}</NavLink>
@@ -393,7 +389,7 @@ export function App() {
                   />
                 }
               />
-              <Route path="/about" element={<About locale={locale} />} />
+              <Route path="/about" element={<Navigate to="/" replace />} />
               <Route
                 path="/connection"
                 element={<Connection locale={locale} />}
@@ -448,23 +444,6 @@ export function App() {
         </footer>
       )}
     </div>
-  );
-}
-function About({ locale }: { locale: Locale }) {
-  const t = publicCopy[locale];
-  return (
-    <article className="reading">
-      <p className="eyebrow">{t.aboutLabel}</p>
-      <h1>{t.aboutTitle}</h1>
-      <p className="intro">{t.aboutIntro}</p>
-      <h2>{t.chapter}</h2>
-      <p>{t.vision}</p>
-      <h2>{t.beginning}</h2>
-      <p>{t.available}</p>
-      <Link className="text-link" to="/">
-        {t.back}
-      </Link>
-    </article>
   );
 }
 type ConnectionState = 'idle' | 'loading' | 'ready' | 'error';

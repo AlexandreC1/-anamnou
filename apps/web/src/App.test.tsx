@@ -68,7 +68,7 @@ describe('foundation shell', () => {
       'sage',
     );
   });
-  it('offers working navigation without pretending class features exist', async () => {
+  it('takes readers from the homepage to Settings', async () => {
     render(
       <MemoryRouter>
         <App />
@@ -77,11 +77,10 @@ describe('foundation shell', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'A yearbook for your class.',
     );
-    await userEvent.click(screen.getByRole('link', { name: /^The idea$/ }));
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'A yearbook worth',
-    );
-    expect(screen.getByText(/create and verify your account/)).toBeVisible();
+    await userEvent.click(screen.getByRole('link', { name: 'Settings' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Settings' }),
+    ).toBeVisible();
   });
   it('recovers from a missing route', () => {
     render(

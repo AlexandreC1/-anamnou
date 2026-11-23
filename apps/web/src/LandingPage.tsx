@@ -8,7 +8,6 @@ const content = {
   en: {
     tapOpen: 'Tap the book to open',
     tapClose: 'Tap the book to close',
-    read: 'Open your class yearbook',
     heading: 'A yearbook for your class.',
     description: 'Collect profiles, photos and class memories in one place.',
     sample: 'Sample yearbook',
@@ -25,7 +24,6 @@ const content = {
   fr: {
     tapOpen: 'Touchez le livre pour ouvrir',
     tapClose: 'Touchez le livre pour fermer',
-    read: 'Ouvrir l’album de votre classe',
     heading: 'Un album pour votre classe.',
     description:
       'Rassemblez les profils, les photos et les souvenirs de classe au même endroit.',
@@ -43,7 +41,6 @@ const content = {
   ht: {
     tapOpen: 'Peze liv la pou louvri l',
     tapClose: 'Peze liv la pou fèmen l',
-    read: 'Louvri liv klas ou',
     heading: 'Yon liv pou klas ou.',
     description: 'Rasanble pwofil, foto ak souvni klas la nan yon sèl kote.',
     sample: 'Egzanp liv klas',
@@ -59,7 +56,6 @@ const content = {
   es: {
     tapOpen: 'Toca el libro para abrirlo',
     tapClose: 'Toca el libro para cerrarlo',
-    read: 'Abrir el anuario de tu clase',
     heading: 'Un anuario para tu clase.',
     description: 'Reúne perfiles, fotos y recuerdos de clase en un solo lugar.',
     sample: 'Anuario de ejemplo',
@@ -96,14 +92,11 @@ function YearbookScene({ locale, theme }: { locale: Locale; theme: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="demo-edition">
+      <p className="sample-yearbook-label">{t.sample}</p>
       <div className="memory-stage" data-theme={theme}>
         <div className="stage-orbit" aria-hidden="true" />
         <div className="glass-pebble pebble-one" aria-hidden="true" />
         <div className="glass-pebble pebble-two" aria-hidden="true" />
-        <div className="stage-caption">
-          <span className="status-dot" />
-          {t.sample}
-        </div>
         <button
           type="button"
           className={'sculpture-book' + (open ? ' is-open' : '')}
@@ -165,9 +158,6 @@ function YearbookScene({ locale, theme }: { locale: Locale; theme: string }) {
         </button>
         <div className="stage-controls">
           <span className="book-tap-hint">{open ? t.tapClose : t.tapOpen}</span>
-          <Link className="real-yearbook-link" to="/classes">
-            {t.read}
-          </Link>
         </div>
         <p
           id="edition-preview-description"

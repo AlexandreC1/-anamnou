@@ -69,7 +69,7 @@
 .collection-hero .intro {
   color: var(--ink);
 }
-.collection-hero .stage-caption,
+.sample-yearbook-label,
 .collection-hero .demo-photo-credits {
   color: var(--ink);
 }
@@ -146,6 +146,12 @@
 }
 .collection-hero .demo-edition {
   min-width: 0;
+}
+.sample-yearbook-label {
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 .collection-hero .memory-stage {
   animation: none;
@@ -302,13 +308,6 @@
 .book-tap-hint {
   font-size: 0.7rem;
   color: var(--ink);
-}
-.real-yearbook-link {
-  font-size: 0.75rem;
-  color: var(--ink);
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
 }
 .collection-hero .peek-button {
   color: var(--ink);

@@ -35,7 +35,8 @@ Actual reader: `/classes/:id/yearbook`, reached through My Class, then a class's
 Yearbook navigation. It requires appropriate class access. The homepage book is
 an explicitly labeled sample, not a public class edition. It now toggles when
 the book itself is clicked/tapped, with keyboard support and a hinged reverse
-cover. Its link to the class chooser is labeled Open your class yearbook.
+cover. One preview instruction sits below the illustration. My Class in the
+main navigation leads to real class yearbooks.
 
 ## Actual deployment state
 

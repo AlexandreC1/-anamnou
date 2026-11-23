@@ -60,11 +60,11 @@ test('reader navigates real routes, reloads, and checks the real API', async ({
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     'A yearbook for your class.',
   );
-  await page.getByRole('link', { name: 'The idea' }).click();
-  await expect(page).toHaveURL(/\/about$/);
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await expect(page).toHaveURL(/\/settings$/);
   await page.reload();
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'A yearbook worth',
+    'Settings',
   );
   await page.getByRole('link', { name: 'Connection status' }).click();
   await page.getByRole('button', { name: 'Check connection' }).click();

@@ -228,26 +228,6 @@ a svg {
   --cover: oklch(78% 0.08 157);
   --cover-ink: oklch(26% 0.05 157);
 }
-.stage-caption {
-  position: absolute;
-  left: 50%;
-  top: 28px;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.6rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: oklch(42% 0.05 305);
-}
-.status-dot {
-  height: 5px;
-  width: 5px;
-  background: currentColor;
-  border-radius: 50%;
-}
 .stage-orbit {
   position: absolute;
   width: 108%;
