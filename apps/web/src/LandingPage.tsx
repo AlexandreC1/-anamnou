@@ -6,6 +6,9 @@ import { publicCopy } from './public-copy';
 
 const content = {
   en: {
+    tapOpen: 'Tap the book to open',
+    tapClose: 'Tap the book to close',
+    read: 'Open your class yearbook',
     heading: 'A yearbook for your class.',
     description: 'Collect profiles, photos and class memories in one place.',
     sample: 'Sample yearbook',
@@ -20,6 +23,9 @@ const content = {
     ceremony: 'Graduation ceremony pictured on the UNAH website',
   },
   fr: {
+    tapOpen: 'Touchez le livre pour ouvrir',
+    tapClose: 'Touchez le livre pour fermer',
+    read: 'Ouvrir l’album de votre classe',
     heading: 'Un album pour votre classe.',
     description:
       'Rassemblez les profils, les photos et les souvenirs de classe au même endroit.',
@@ -35,6 +41,9 @@ const content = {
     ceremony: 'Cérémonie de graduation photographiée sur le site de l’UNAH',
   },
   ht: {
+    tapOpen: 'Peze liv la pou louvri l',
+    tapClose: 'Peze liv la pou fèmen l',
+    read: 'Louvri liv klas ou',
     heading: 'Yon liv pou klas ou.',
     description: 'Rasanble pwofil, foto ak souvni klas la nan yon sèl kote.',
     sample: 'Egzanp liv klas',
@@ -48,6 +57,9 @@ const content = {
     ceremony: 'Seremoni gradyasyon sou sit UNAH la',
   },
   es: {
+    tapOpen: 'Toca el libro para abrirlo',
+    tapClose: 'Toca el libro para cerrarlo',
+    read: 'Abrir el anuario de tu clase',
     heading: 'Un anuario para tu clase.',
     description: 'Reúne perfiles, fotos y recuerdos de clase en un solo lugar.',
     sample: 'Anuario de ejemplo',
@@ -92,69 +104,70 @@ function YearbookScene({ locale, theme }: { locale: Locale; theme: string }) {
           <span className="status-dot" />
           {t.sample}
         </div>
-        <div
+        <button
+          type="button"
           className={'sculpture-book' + (open ? ' is-open' : '')}
-          aria-hidden="true"
+          aria-label={open ? t.close : t.open}
+          aria-expanded={open}
+          aria-controls="edition-preview-description"
+          onClick={() => setOpen((value) => !value)}
         >
-          <div className="sculpture-pages">
-            <span className="page-kicker">Anamnou / 01</span>
-            <img
-              src="/images/haitian-graduation-unah.webp"
-              alt=""
-              width="1200"
-              height="800"
-              decoding="async"
-            />
-            <strong>{t.inside}</strong>
-            <p>{t.insideNote}</p>
-          </div>
-          <div className="book-leaf">
-            <div className="sculpture-cover">
-              <div className="cover-masthead">
-                <span>Anamnou.</span>
-                <span>VOL. 01</span>
-              </div>
-              <p className="sculpture-title">{t.cover}</p>
-              <div className="cover-window">
+          <span className="book-visual" aria-hidden="true">
+            <span className="sculpture-pages">
+              <span className="page-kicker">Anamnou / 01</span>
+              <img
+                src="/images/haitian-graduation-unah.webp"
+                alt=""
+                width="1200"
+                height="800"
+                decoding="async"
+              />
+              <strong>{t.inside}</strong>
+              <span className="inside-page-description">{t.insideNote}</span>
+            </span>
+            <span className="book-leaf">
+              <span className="sculpture-cover">
+                <span className="cover-masthead">
+                  <span>Anamnou.</span>
+                  <span>VOL. 01</span>
+                </span>
+                <span className="sculpture-title">{t.cover}</span>
+                <span className="cover-window">
+                  <img
+                    src="/images/haitian-graduates-chcl.webp"
+                    alt=""
+                    width="1600"
+                    height="577"
+                    fetchPriority="high"
+                    decoding="async"
+                  />
+                </span>
+                <span className="cover-bottom">
+                  <span>{publicCopy[locale].archive}</span>
+                  <span>2026</span>
+                </span>
+              </span>
+              <span className="book-cover-back">
+                <span className="page-kicker">Anamnou / 2026</span>
+                <strong>{t.cover}</strong>
                 <img
                   src="/images/haitian-graduates-chcl.webp"
                   alt=""
                   width="1600"
                   height="577"
-                  fetchPriority="high"
                   decoding="async"
                 />
-              </div>
-              <div className="cover-bottom">
-                <span>{publicCopy[locale].archive}</span>
-                <span>2026</span>
-              </div>
-            </div>
-            <div className="book-cover-back">
-              <span className="page-kicker">Anamnou / 2026</span>
-              <strong>{t.cover}</strong>
-              <img
-                src="/images/haitian-graduates-chcl.webp"
-                alt=""
-                width="1600"
-                height="577"
-                decoding="async"
-              />
-              <span className="inside-page-number">01</span>
-            </div>
-          </div>
-        </div>
+                <span className="inside-page-number">01</span>
+              </span>
+            </span>
+          </span>
+          <span className="book-hit-area" aria-hidden="true" />
+        </button>
         <div className="stage-controls">
-          <button
-            className="peek-button"
-            type="button"
-            aria-expanded={open}
-            aria-controls="edition-preview-description"
-            onClick={() => setOpen((value) => !value)}
-          >
-            {open ? t.close : t.open}
-            <Arrow />
-          </button>
+          <span className="book-tap-hint">{open ? t.tapClose : t.tapOpen}</span>
+          <Link className="real-yearbook-link" to="/classes">
+            {t.read}
+          </Link>
         </div>
         <p
           id="edition-preview-description"

@@ -27,6 +27,12 @@ opening reveals a connected two-page spread with the cover lining, spine and
 page edges visible. Closing reverses the same transition. Reduced motion skips
 the animation without changing the open/closed states.
 
+Follow-up: the book itself is now a native button, so clicking/tapping its cover
+or open spread toggles it. Enter/Space retain native keyboard behavior. The
+separate preview button was removed. A link labeled Open your class yearbook
+leads to the class chooser; the actual reader remains `/classes/:id/yearbook`
+with its existing access checks. The sample never impersonates a real class.
+
 ## Implementation
 
 - `apps/web/src/LandingPage.tsx`: concise four-language copy and focused actions.

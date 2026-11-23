@@ -28,7 +28,12 @@ export function ClassesHome({ locale }: { locale: Locale }) {
         <Link to="/join">{t.join}</Link>
       </nav>
       {!result.data ? (
-        <LoadState error={result.error} retry={result.reload} locale={locale} />
+        <LoadState
+          error={result.error}
+          retry={result.reload}
+          locale={locale}
+          showBack={false}
+        />
       ) : (
         <>
           {result.data.items.length === 0 ? (
