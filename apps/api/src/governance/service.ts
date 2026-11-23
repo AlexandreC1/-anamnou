@@ -61,7 +61,7 @@ export class GovernanceService {
     if (!(await tx.school.findUnique({ where: { id: schoolId } })))
       throw new NotFoundException();
   }
-  private async actor(tx: Transaction, actor: Actor, platform = false) {
+  async actor(tx: Transaction, actor: Actor, platform = false) {
     const tokenHash = hashToken(actor.token);
     await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${actor.user.id}::uuid FOR SHARE`;
     await tx.$queryRaw`SELECT "id" FROM "Session" WHERE "tokenHash" = ${tokenHash} FOR SHARE`;

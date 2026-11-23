@@ -12,8 +12,9 @@ export class PublicationModule {
     database: Database,
     storage: ObjectStorage,
     identity: DynamicModule,
+    participationRequired = false,
   ): DynamicModule {
-    const access = new ClassAccess(database);
+    const access = new ClassAccess(database, participationRequired);
     return {
       module: PublicationModule,
       imports: [identity],

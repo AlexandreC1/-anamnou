@@ -1,6 +1,7 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import type { Database } from '../database.js';
 import type { Prisma, User } from '../generated/prisma/client.js';
+import { requireParticipation } from '../governance/participation-access.js';
 
 export type Transaction = Prisma.TransactionClient;
 export interface ClassScope {
@@ -10,7 +11,10 @@ export interface ClassScope {
   memberId: string | null;
 }
 export class ClassAccess {
-  constructor(readonly database: Database) {}
+  constructor(
+    readonly database: Database,
+    readonly participationRequired = false,
+  ) {}
   async schoolAdmin(tx: Transaction, schoolId: string, user: User) {
     return (
       user.role === 'PLATFORM_ADMIN' ||
@@ -48,6 +52,11 @@ export class ClassAccess {
       const schoolAdmin = await this.schoolAdmin(tx, klass.schoolId, user);
       if (!schoolAdmin && member?.status !== 'ACTIVE')
         throw new NotFoundException();
+      await requireParticipation(
+        tx,
+        member?.status === 'ACTIVE' ? member.id : null,
+        this.participationRequired,
+      );
       const admin = schoolAdmin || member?.role === 'CLASS_ADMIN';
       if (requireAdmin && !admin) throw new ForbiddenException();
       return action(tx, {

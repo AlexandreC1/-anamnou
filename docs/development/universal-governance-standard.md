@@ -6,10 +6,12 @@ Status: architecture and implementation requirements, October 6, 2026. This supe
 
 Delivered foundations: [MFA](mfa-delivery-2026-10-06.md),
 [scoped grants and review queues](governance-delivery-2026-10-06.md), and
-[the operator interface](governance-ui-delivery-2026-10-07.md).
-Jurisdiction policies, case processing, participation restrictions, independent
-appeals and privacy fulfillment remain planned; team configuration does not
-establish launch readiness or legal compliance.
+[the operator interface](governance-ui-delivery-2026-10-07.md), and
+[versioned participation policies, assigned review and withdrawal restrictions](../adr/0013-participation-authorization.md).
+See the [November 23 release record](release-work-2026-11-23.md) for verification.
+Reviewed jurisdiction rules, guardian authority verification, broader case
+processing, independent appeals and privacy fulfillment remain incomplete;
+these foundations do not establish launch readiness or legal compliance.
 
 Apply privacy, safety, accessibility, tenant isolation and user rights throughout the product, across schools, universities, alumni groups and other approved educational organizations. Support adults, minors, guardians, staff, guests, administrators and mixed-age cohorts. Organization type must not weaken the baseline safeguards.
 

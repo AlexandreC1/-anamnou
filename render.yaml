@@ -9,7 +9,7 @@ services:
     dockerContext: .
     autoDeployTrigger: off
     healthCheckPath: /ready
-    dockerCommand: sh -c 'npm run db:migrate && node apps/api/dist/main.js'
+    dockerCommand: node apps/api/dist/main.js
     envVars:
       - key: APP_ENV
         value: production

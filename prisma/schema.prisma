@@ -169,6 +169,7 @@ enum InvitationStatus {
 }
 
 model School {
+  participationPolicies ParticipationPolicy[]
   governanceGrants GovernanceGrant[]
   reviewQueues ReviewQueue[]
   verifiedAt DateTime? @db.Timestamptz(3)
@@ -221,6 +222,7 @@ model GovernanceGrant {
 }
 
 model ReviewQueue {
+  participationCases ParticipationAuthorization[]
   id String @id @default(uuid()) @db.Uuid
   schoolId String @db.Uuid
   school School @relation(fields: [schoolId], references: [id], onDelete: Restrict)
@@ -236,6 +238,7 @@ model ReviewQueue {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
   @@unique([schoolId, name])
+  @@unique([id, schoolId])
   @@index([schoolId, role])
 }
 
@@ -268,6 +271,7 @@ model Class {
 }
 
 model ClassMembership {
+  participation ParticipationAuthorization?
   id String @id @default(uuid()) @db.Uuid
   classId String @db.Uuid
   userId String @db.Uuid
@@ -283,6 +287,69 @@ model ClassMembership {
   @@unique([id, classId])
   @@index([userId, status])
   @@index([classId, status, role])
+}
+
+enum ParticipationStatus {
+  PENDING
+  APPROVED
+  DENIED
+  WITHDRAWN
+}
+
+model ParticipationPolicy {
+  id String @id @default(uuid()) @db.Uuid
+  schoolId String @db.Uuid
+  school School @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  version Int
+  jurisdiction String @db.VarChar(120)
+  notice String @db.VarChar(6000)
+  reviewReference String @db.VarChar(120)
+  createdById String @db.Uuid
+  approvedById String? @db.Uuid
+  approvedAt DateTime? @db.Timestamptz(3)
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  authorizations ParticipationAuthorization[]
+  @@unique([schoolId, version])
+  @@unique([id, schoolId])
+}
+
+model ParticipationAuthorization {
+  queueId String? @db.Uuid
+  queue ReviewQueue? @relation(fields: [queueId, schoolId], references: [id, schoolId], onDelete: Restrict)
+  events ParticipationEvent[]
+  id String @id @default(uuid()) @db.Uuid
+  membershipId String @unique @db.Uuid
+  membership ClassMembership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  policyId String @db.Uuid
+  schoolId String @db.Uuid
+  policy ParticipationPolicy @relation(fields: [policyId, schoolId], references: [id, schoolId], onDelete: Restrict)
+  status ParticipationStatus @default(PENDING)
+  authority String? @db.VarChar(24)
+  reviewReference String? @db.VarChar(120)
+  reviewedById String? @db.Uuid
+  reviewedAt DateTime? @db.Timestamptz(3)
+  expiresAt DateTime? @db.Timestamptz(3)
+  withdrawnAt DateTime? @db.Timestamptz(3)
+  version Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  @@index([schoolId, status])
+  @@unique([id, schoolId])
+}
+
+model ParticipationEvent {
+  id String @id @default(uuid()) @db.Uuid
+  authorizationId String @db.Uuid
+  schoolId String @db.Uuid
+  authorization ParticipationAuthorization @relation(fields: [authorizationId, schoolId], references: [id, schoolId], onDelete: Restrict)
+  actorUserId String @db.Uuid
+  action String @db.VarChar(32)
+  version Int
+  details Json
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  @@unique([authorizationId, version])
+  @@index([schoolId, createdAt])
 }
 
 model Invitation {

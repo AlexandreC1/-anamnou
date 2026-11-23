@@ -14,7 +14,7 @@ export class ClassesModule {
     webUrl: string,
     requireVerifiedSchool = false,
   ): DynamicModule {
-    const access = new ClassAccess(database);
+    const access = new ClassAccess(database, requireVerifiedSchool);
     return {
       module: ClassesModule,
       imports: [identity],

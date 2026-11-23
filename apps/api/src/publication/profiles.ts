@@ -7,6 +7,7 @@ import {
 import type { z } from 'zod';
 import type { Profile, User } from '../generated/prisma/client.js';
 import { ClassAccess, audit } from '../classes/access.js';
+import { participationWhere } from '../governance/participation-access.js';
 import type { profileInput } from './rules.js';
 
 const photoSelection = {
@@ -33,7 +34,13 @@ export class ProfilesService {
       const id = memberId === 'me' ? access.memberId : memberId;
       if (!id) throw new ForbiddenException();
       const member = await tx.classMembership.findFirst({
-        where: { id, classId, status: 'ACTIVE', role: { not: 'GUEST' } },
+        where: {
+          id,
+          classId,
+          status: 'ACTIVE',
+          role: { not: 'GUEST' },
+          ...participationWhere(this.access.participationRequired),
+        },
         include: {
           profile: { include: { photo: { select: photoSelection } } },
           user: { select: { displayName: true } },

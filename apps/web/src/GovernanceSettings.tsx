@@ -302,6 +302,17 @@ export function GovernanceSettings({ locale }: { locale: Locale }) {
       <p className="intro">{t.intro}</p>
       <p>{t.boundary}</p>
       <Link to="/settings/security">{t.security}</Link>
+      {' · '}
+      <Link to="/settings/participation/review">
+        {
+          {
+            en: 'Participation review',
+            fr: 'Examen de participation',
+            ht: 'Revizyon patisipasyon',
+            es: 'Revisión de participación',
+          }[locale]
+        }
+      </Link>
       {!account.data || !own.data ? (
         <LoadState
           locale={locale}

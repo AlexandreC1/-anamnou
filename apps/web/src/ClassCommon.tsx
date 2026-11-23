@@ -5,6 +5,7 @@ import { classError, classRequest, type Page, type Role } from './class-api';
 import type { Locale } from './identity-copy';
 import { ApiError } from './identity-api';
 import { yearbookCopy } from './yearbook-copy';
+import { participationCopy } from './participation-copy';
 
 // Save failures for versioned drafts; a 409 means someone saved a newer version.
 export function SaveError({
@@ -48,6 +49,13 @@ export function LoadState({
         <Link to="/login">{t.signIn}</Link>
       </p>
       <Link to="/classes">{t.back}</Link>
+      {error instanceof ApiError && error.status === 403 && (
+        <p>
+          <Link to="/settings/participation">
+            {participationCopy[locale].title}
+          </Link>
+        </p>
+      )}
     </div>
   ) : (
     <div className="resource-loading" role="status">

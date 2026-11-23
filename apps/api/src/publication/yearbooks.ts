@@ -1,3 +1,4 @@
+import { participationWhere } from '../governance/participation-access.js';
 import {
   BadRequestException,
   ConflictException,
@@ -9,11 +10,25 @@ import { ClassAccess, audit } from '../classes/access.js';
 import { pageQuery, pageResult } from '../classes/rules.js';
 import type { yearbookInput, readerQuery } from './rules.js';
 
-const include = {
+const include = (classId: string, required: boolean) => ({
   sections: {
     orderBy: { position: 'asc' as const },
     include: {
       media: {
+        where: {
+          asset: {
+            status: 'READY' as const,
+            owner: {
+              memberships: {
+                some: {
+                  classId,
+                  status: 'ACTIVE' as const,
+                  ...participationWhere(required),
+                },
+              },
+            },
+          },
+        },
         orderBy: { position: 'asc' as const },
         select: {
           asset: { select: { id: true, alt: true, width: true, height: true } },
@@ -21,7 +36,7 @@ const include = {
       },
     },
   },
-};
+});
 export class YearbooksService {
   constructor(private readonly access: ClassAccess) {}
   get(user: User, classId: string) {
@@ -29,7 +44,7 @@ export class YearbooksService {
       if (scope.guest) throw new ForbiddenException();
       const yearbook = await tx.yearbook.findUnique({
         where: { classId },
-        include,
+        include: include(classId, this.access.participationRequired),
       });
       const klass = await tx.class.findUniqueOrThrow({
         where: { id: classId },
@@ -147,6 +162,7 @@ export class YearbooksService {
             ? { quote: { not: null }, NOT: { quote: '' } }
             : {}),
           membership: {
+            ...participationWhere(this.access.participationRequired),
             status: 'ACTIVE',
             role:
               page.kind === 'STAFF'

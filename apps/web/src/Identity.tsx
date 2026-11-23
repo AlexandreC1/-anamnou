@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { participationCopy } from './participation-copy';
 import { Link, useNavigate } from 'react-router';
 import { identityCopy, type Locale } from './identity-copy';
 import { classCopy } from './class-copy';
@@ -406,6 +407,9 @@ export function AccountPage({ locale }: { locale: Locale }) {
             </form>
             {saved && <p role="status">{t.saved}</p>}
             <div className="account-links">
+              <Link to="/settings/participation">
+                {participationCopy[locale].title}
+              </Link>
               <Link to="/settings/security">
                 {securityLabels[locale].title}
               </Link>

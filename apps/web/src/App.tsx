@@ -68,6 +68,16 @@ const SecuritySettings = lazy(() =>
 const GovernanceSettings = lazy(() =>
   routeModules.governance().then((m) => ({ default: m.GovernanceSettings })),
 );
+const ParticipationSettings = lazy(() =>
+  routeModules
+    .participation()
+    .then((m) => ({ default: m.ParticipationSettings })),
+);
+const ParticipationReview = lazy(() =>
+  routeModules
+    .participationReview()
+    .then((m) => ({ default: m.ParticipationReview })),
+);
 
 type Locale = 'ht' | 'fr' | 'en' | 'es';
 const localeLabels: Record<Locale, string> = {
@@ -401,6 +411,14 @@ export function App() {
                 element={<SecuritySettings locale={locale} />}
               />
               <Route path="*" element={<NotFound locale={locale} />} />
+              <Route
+                path="/settings/participation"
+                element={<ParticipationSettings locale={locale} />}
+              />
+              <Route
+                path="/settings/participation/review"
+                element={<ParticipationReview locale={locale} />}
+              />
               <Route
                 path="/settings/governance"
                 element={<GovernanceSettings locale={locale} />}

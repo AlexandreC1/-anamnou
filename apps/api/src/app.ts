@@ -65,7 +65,12 @@ class FoundationModule {
           environment.PUBLIC_WEB_URL,
           environment.APP_ENV === 'production',
         ),
-        PublicationModule.register(database, storage, identity),
+        PublicationModule.register(
+          database,
+          storage,
+          identity,
+          environment.APP_ENV === 'production',
+        ),
       ],
       controllers: [HealthController],
       providers: [

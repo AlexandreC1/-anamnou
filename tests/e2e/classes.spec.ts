@@ -58,6 +58,35 @@ test('president creates school/class, shares invitation QR, student joins and ad
     page.getByRole('heading', { name: 'Class ' + suffix }),
   ).toBeVisible();
   const classUrl = page.url();
+  await page.goto('/settings/participation');
+  await expect(
+    page.getByRole('heading', {
+      name: 'Participation and permissions',
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Class ' + suffix, exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText('Review not requested', { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/no current approved participation policy/),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Request participation review' }),
+  ).toHaveCount(0);
+  await page.screenshot({
+    path: 'test-results/participation-' + test.info().project.name + '.png',
+    fullPage: true,
+  });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.goto(classUrl);
   await page.getByRole('link', { name: /Members & invitations/ }).click();
   await page.getByLabel('Maximum uses').fill('1');
   await page.getByRole('button', { name: 'Create invitation' }).click();

@@ -17,6 +17,7 @@ import {
 import type { ObjectStorage } from '../storage.js';
 import type { intentInput } from './rules.js';
 import { normalizeImage } from './image.js';
+import { participationWhere } from '../governance/participation-access.js';
 
 const view = (asset: MediaAsset) => ({
   id: asset.id,
@@ -49,16 +50,32 @@ async function readableAsset(
   scope: ClassScope,
   user: User,
   id: string,
+  participationRequired: boolean,
 ) {
   const current = await tx.mediaAsset.findUniqueOrThrow({ where: { id } });
   if (scope.guest || current.status !== 'READY') throw new NotFoundException();
+  if (
+    !(await tx.classMembership.findFirst({
+      where: {
+        classId: current.classId,
+        userId: current.ownerUserId,
+        status: 'ACTIVE',
+        ...participationWhere(participationRequired),
+      },
+    }))
+  )
+    throw new NotFoundException();
   const shared =
     current.purpose === 'PROFILE'
       ? await tx.profile.count({
           where: {
             photoAssetId: id,
             visibility: 'CLASS',
-            membership: { status: 'ACTIVE', role: { not: 'GUEST' } },
+            membership: {
+              status: 'ACTIVE',
+              role: { not: 'GUEST' },
+              ...participationWhere(participationRequired),
+            },
           },
         })
       : scope.admin ||
@@ -250,7 +267,15 @@ export class MediaService {
       user,
       false,
       async (tx, scope) =>
-        (await readableAsset(tx, scope, user, id)).storageKey,
+        (
+          await readableAsset(
+            tx,
+            scope,
+            user,
+            id,
+            this.access.participationRequired,
+          )
+        ).storageKey,
     );
     // Storage reads do not hold a class/database lock. Recheck after I/O so
     // removal or privacy changes during a download cannot expose stale content.
@@ -260,7 +285,13 @@ export class MediaService {
       user,
       false,
       async (tx, scope) => {
-        await readableAsset(tx, scope, user, id);
+        await readableAsset(
+          tx,
+          scope,
+          user,
+          id,
+          this.access.participationRequired,
+        );
       },
     );
     return bytes;

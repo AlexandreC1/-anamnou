@@ -8,6 +8,8 @@ export const routeModules = {
   reader: () => import('./YearbookReader'),
   security: () => import('./SecuritySettings'),
   governance: () => import('./GovernanceSettings'),
+  participation: () => import('./ParticipationSettings'),
+  participationReview: () => import('./ParticipationReview'),
 };
 
 export function routeModule(
@@ -15,6 +17,8 @@ export function routeModule(
 ): keyof typeof routeModules | undefined {
   if (path === '/settings/security') return 'security';
   if (path === '/settings/governance') return 'governance';
+  if (path === '/settings/participation') return 'participation';
+  if (path === '/settings/participation/review') return 'participationReview';
   if (
     /^\/(profile|register|login|forgot-password|reset-password|verify-email|resend-verification)$/.test(
       path,

@@ -6,6 +6,7 @@ import {
 import type { z } from 'zod';
 import type { User } from '../generated/prisma/client.js';
 import { ClassAccess, audit } from './access.js';
+import { participationWhere } from '../governance/participation-access.js';
 import { generatedSlug } from './rules.js';
 import {
   pageQuery,
@@ -83,7 +84,15 @@ export class ClassesService {
     return this.access.withClass(id, user, false, async (tx, access) => {
       if (access.guest) throw new ForbiddenException();
       const rows = await tx.classMembership.findMany({
-        where: { classId: id, ...(access.admin ? {} : { status: 'ACTIVE' }) },
+        where: {
+          classId: id,
+          ...(access.admin
+            ? {}
+            : {
+                status: 'ACTIVE',
+                ...participationWhere(this.access.participationRequired),
+              }),
+        },
         select: {
           id: true,
           role: true,
