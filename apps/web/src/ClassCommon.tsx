@@ -35,20 +35,28 @@ export function LoadState({
   error,
   retry,
   locale,
+  showBack = true,
 }: {
   error?: unknown;
   retry: () => void;
   locale: Locale;
+  showBack?: boolean;
 }) {
   const t = classCopy[locale];
+  const signedOut = error instanceof ApiError && error.status === 401;
   return error ? (
     <div role="alert">
-      <p>{classError(error, locale)}</p>
-      <button onClick={retry}>{t.retry}</button>
-      <p>
-        <Link to="/login">{t.signIn}</Link>
-      </p>
-      <Link to="/classes">{t.back}</Link>
+      {signedOut ? (
+        <p>
+          <Link to="/login">{t.signIn}</Link>
+        </p>
+      ) : (
+        <>
+          <p>{classError(error, locale)}</p>
+          <button onClick={retry}>{t.retry}</button>
+        </>
+      )}
+      {showBack && <Link to="/classes">{t.back}</Link>}
       {error instanceof ApiError && error.status === 403 && (
         <p>
           <Link to="/settings/participation">

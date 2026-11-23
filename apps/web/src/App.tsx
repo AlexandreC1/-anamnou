@@ -17,6 +17,7 @@ import { ClassWorkspace } from './ClassWorkspace';
 import './yearbook.css';
 import { LandingPage } from './LandingPage';
 import './prism.css';
+import './collection.css';
 import { apiFetch } from './api-transport';
 import { NativeNavigation } from './NativeNavigation';
 
@@ -277,7 +278,13 @@ export function App() {
   const { pathname } = useLocation();
   const inWorkspace = /^\/classes\/(?!new(?:\/|$))[^/]+/.test(pathname);
   return (
-    <div className={'site' + (inWorkspace ? ' site-workspace' : '')}>
+    <div
+      className={
+        'site' +
+        (inWorkspace ? ' site-workspace' : '') +
+        (pathname === '/' ? ' site-collection' : '')
+      }
+    >
       <a className="skip-link" href="#main">
         {selected.skip}
       </a>

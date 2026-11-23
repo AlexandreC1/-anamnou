@@ -304,54 +304,103 @@ export function LandingPage({
 }) {
   const t = content[locale];
   return (
-    <div className="landing">
-      <section className="prism-hero" aria-labelledby="opening-title">
-        <div className="hero-copy">
-          <p className="hero-label">
-            <span className="tiny-book" aria-hidden="true" />
-            {t.label}
-          </p>
-          <h1 id="opening-title">
-            {selected.titleA}
-            <br />
-            <em>{selected.titleB}</em>
-          </h1>
-          <p className="intro">{selected.intro}</p>
-          <div className="hero-actions">
-            <Link className="primary-link" to="/classes/new">
-              {t.start}
-              <Arrow />
-            </Link>
-            <Link className="hero-discover" to="/about">
-              {selected.discover}
-              <Arrow diagonal />
-            </Link>
+    <div className="landing collection-landing">
+      <div className="collection-dark">
+        <svg
+          className="collection-contours"
+          viewBox="0 0 1440 900"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          {Array.from({ length: 22 }, (_, index) => (
+            <path
+              key={index}
+              d={`M ${-900 + index * 90} -100 C ${-100 + index * 65} 650, ${400 + index * 45} -200, ${850 + index * 65} 1000`}
+            />
+          ))}
+        </svg>
+        <section className="collection-hero" aria-labelledby="opening-title">
+          <div className="hero-copy">
+            <p className="hero-label">{t.label}</p>
+            <h1 id="opening-title">
+              {selected.titleA} <br />
+              <em>{selected.titleB}</em>
+            </h1>
+            <p className="intro">{selected.intro}</p>
+            <div className="hero-actions">
+              <Link className="primary-link" to="/classes/new">
+                {t.start}
+                <Arrow />
+              </Link>
+              <Link className="hero-discover" to="/about">
+                {selected.discover}
+                <Arrow diagonal />
+              </Link>
+            </div>
+            <p className="hero-privacy">
+              <svg
+                aria-hidden="true"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <rect x="5" y="10" width="14" height="11" rx="3" />
+                <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v3" />
+              </svg>
+              {t.private}
+            </p>
           </div>
-          <p className="hero-privacy">
-            <svg
-              aria-hidden="true"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
+          <YearbookScene locale={locale} theme={theme} />
+        </section>
+        <nav className="collection-tags" aria-label={t.label}>
+          {t.steps.map(([title], index) => (
+            <a
+              className={`collection-tag tag-${index}`}
+              href={`#story-step-${index}`}
+              key={title}
             >
-              <rect x="5" y="10" width="14" height="11" rx="3" />
-              <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v3" />
-            </svg>
-            {t.private}
-          </p>
-        </div>
-        <YearbookScene locale={locale} theme={theme} />
-      </section>
-      <div className="story-ribbon">
-        {t.ribbon.map((item, index) => (
-          <span key={item}>
-            <span className="ribbon-number">0{index + 1}</span>
-            {item}
-          </span>
-        ))}
+              <span className="tag-eyelet" aria-hidden="true" />
+              <span className="tag-label">{title}</span>
+              <span
+                className={`tag-object tag-object-${index}`}
+                aria-hidden="true"
+              >
+                {index === 0 ? (
+                  <img
+                    src="/images/haitian-graduates-chcl.webp"
+                    alt=""
+                    width="1600"
+                    height="577"
+                  />
+                ) : index === 1 ? (
+                  <span>
+                    Aa
+                    <span className="tag-writing" />
+                  </span>
+                ) : (
+                  <span>
+                    Anamnou.<small>2026</small>
+                  </span>
+                )}
+              </span>
+              <Arrow diagonal />
+            </a>
+          ))}
+          <Link className="collection-tag tag-3" to="/join">
+            <span className="tag-eyelet" aria-hidden="true" />
+            <span className="tag-label">{t.invite}</span>
+            <span className="tag-object tag-object-3" aria-hidden="true">
+              <span>
+                01
+                <span className="tag-writing" />
+              </span>
+            </span>
+            <Arrow diagonal />
+          </Link>
+        </nav>
       </div>
       <section className="story-section" aria-labelledby="story-title">
         <div className="story-heading">
@@ -366,7 +415,7 @@ export function LandingPage({
           <p>{t.chapterNote}</p>
         </div>
         <div className="story-features">
-          <article className="story-feature feature-people">
+          <article className="story-feature feature-people" id="story-step-0">
             <div className="feature-art people-art" aria-hidden="true">
               <div className="portrait-tile portrait-a">A</div>
               <div className="portrait-tile portrait-b">N</div>
@@ -381,7 +430,7 @@ export function LandingPage({
               <Arrow diagonal />
             </Link>
           </article>
-          <article className="story-feature feature-page">
+          <article className="story-feature feature-page" id="story-step-1">
             <div className="feature-art page-art" aria-hidden="true">
               <div className="mini-page">
                 <div className="mini-photo" />
@@ -402,7 +451,7 @@ export function LandingPage({
               <Arrow diagonal />
             </Link>
           </article>
-          <article className="story-feature feature-edition">
+          <article className="story-feature feature-edition" id="story-step-2">
             <div className="feature-art edition-art" aria-hidden="true">
               <div className="mini-edition edition-back" />
               <div className="mini-edition edition-middle" />

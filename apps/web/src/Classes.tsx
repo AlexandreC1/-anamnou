@@ -108,7 +108,12 @@ export function SchoolManage({ locale }: { locale: Locale }) {
     <section className="class-page class-form">
       <h1>{t.schoolManage}</h1>
       {!result.data ? (
-        <LoadState error={result.error} retry={result.reload} locale={locale} />
+        <LoadState
+          error={result.error}
+          retry={result.reload}
+          locale={locale}
+          showBack={false}
+        />
       ) : (
         <ResourceForm
           key={id}
@@ -181,6 +186,7 @@ export function CreateClass({ locale }: { locale: Locale }) {
           error={schools.error}
           retry={schools.reload}
           locale={locale}
+          showBack={false}
         />
       ) : schools.data.items.length === 0 ? (
         <>
@@ -248,6 +254,7 @@ export function ClassHome({ locale }: { locale: Locale }) {
             error={result.error}
             retry={result.reload}
             locale={locale}
+            showBack={false}
           />
         </>
       ) : (
