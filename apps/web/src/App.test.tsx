@@ -6,6 +6,32 @@ import { App } from './App';
 
 describe('foundation shell', () => {
   beforeEach(() => window.localStorage.clear());
+  it('opens public visitors to the Creole sample without account forms', async () => {
+    vi.stubEnv('VITE_PUBLIC_PREVIEW', 'true');
+    try {
+      render(
+        <MemoryRouter initialEntries={['/login']}>
+          <App />
+        </MemoryRouter>,
+      );
+      expect(
+        await screen.findByRole('heading', { name: 'Yon liv pou klas ou.' }),
+      ).toBeVisible();
+      expect(screen.getByRole('combobox')).toHaveValue('ht');
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('link', { name: /Kreye/ }),
+      ).not.toBeInTheDocument();
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Gade egzanp liv la' }),
+      );
+      expect(
+        screen.getByRole('button', { name: 'Fèmen egzanp lan' }),
+      ).toHaveAttribute('aria-expanded', 'true');
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
   it('lets visitors preview the book and discover appearance settings', async () => {
     const user = userEvent.setup();
     render(

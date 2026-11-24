@@ -16,10 +16,9 @@ const content = {
     close: 'Close preview',
     inside: 'Class profiles',
     insideNote: 'Photos, personal quotes and class memories.',
-    credits: 'Photo credits',
-    photo:
-      'Graduates pictured on the Campus Henry Christophe de Limonade website',
-    ceremony: 'Graduation ceremony pictured on the UNAH website',
+    preview:
+      'Public preview. Explore a fictional yearbook while accounts are closed.',
+    quote: 'One day we’ll open this book and laugh like we’re still in class.',
   },
   fr: {
     tapOpen: 'Touchez le livre pour ouvrir',
@@ -33,10 +32,10 @@ const content = {
     close: 'Fermer l’aperçu',
     inside: 'Profils de classe',
     insideNote: 'Photos, citations personnelles et souvenirs de classe.',
-    credits: 'Crédits photo',
-    photo:
-      'Diplômés photographiés sur le site du Campus Henry Christophe de Limonade',
-    ceremony: 'Cérémonie de graduation photographiée sur le site de l’UNAH',
+    preview:
+      'Aperçu public. Explorez un album fictif en attendant l’ouverture des comptes.',
+    quote:
+      'Un jour, on ouvrira cet album et on rira comme si on était encore en classe.',
   },
   ht: {
     tapOpen: 'Peze liv la pou louvri l',
@@ -49,9 +48,10 @@ const content = {
     close: 'Fèmen egzanp lan',
     inside: 'Pwofil klas la',
     insideNote: 'Foto, sitasyon pèsonèl ak souvni klas la.',
-    credits: 'Sous foto yo',
-    photo: 'Diplome sou sit Campus Henry Christophe de Limonade la',
-    ceremony: 'Seremoni gradyasyon sou sit UNAH la',
+    preview:
+      'Vèsyon tès piblik. Gade yon egzanp liv klas pandan enskripsyon yo fèmen.',
+    quote:
+      'Yon jou, n ap louvri liv sa a epi n ap ri tankou nou te toujou nan klas la.',
   },
   es: {
     tapOpen: 'Toca el libro para abrirlo',
@@ -64,12 +64,14 @@ const content = {
     close: 'Cerrar vista previa',
     inside: 'Perfiles de clase',
     insideNote: 'Fotos, citas personales y recuerdos de clase.',
-    credits: 'Créditos de fotos',
-    photo:
-      'Graduados fotografiados en el sitio del Campus Henry Christophe de Limonade',
-    ceremony: 'Ceremonia de graduación fotografiada en el sitio de UNAH',
+    preview:
+      'Vista pública. Explora un anuario ficticio mientras las cuentas están cerradas.',
+    quote:
+      'Un día abriremos este anuario y nos reiremos como si aún estuviéramos en clase.',
   },
 } satisfies Record<Locale, Record<string, string>>;
+
+const samplePhoto = import.meta.env.BASE_URL + 'images/sample-promotion.webp';
 
 function Arrow() {
   return (
@@ -106,14 +108,14 @@ function YearbookScene({ locale, theme }: { locale: Locale; theme: string }) {
             <span className="sculpture-pages">
               <span className="page-kicker">Anamnou / 01</span>
               <img
-                src="/images/haitian-graduation-unah.webp"
+                src={samplePhoto}
                 alt=""
                 width="1200"
                 height="800"
                 decoding="async"
               />
               <strong>{t.inside}</strong>
-              <span className="inside-page-description">{t.insideNote}</span>
+              <span className="inside-page-description">“{t.quote}”</span>
             </span>
             <span className="book-leaf">
               <span className="sculpture-cover">
@@ -124,10 +126,10 @@ function YearbookScene({ locale, theme }: { locale: Locale; theme: string }) {
                 <span className="sculpture-title">{t.cover}</span>
                 <span className="cover-window">
                   <img
-                    src="/images/haitian-graduates-chcl.webp"
+                    src={samplePhoto}
                     alt=""
-                    width="1600"
-                    height="577"
+                    width="1200"
+                    height="800"
                     fetchPriority="high"
                     decoding="async"
                   />
@@ -141,10 +143,10 @@ function YearbookScene({ locale, theme }: { locale: Locale; theme: string }) {
                 <span className="page-kicker">Anamnou / 2026</span>
                 <strong>{t.cover}</strong>
                 <img
-                  src="/images/haitian-graduates-chcl.webp"
+                  src={samplePhoto}
                   alt=""
-                  width="1600"
-                  height="577"
+                  width="1200"
+                  height="800"
                   decoding="async"
                 />
                 <span className="inside-page-number">01</span>
@@ -161,29 +163,9 @@ function YearbookScene({ locale, theme }: { locale: Locale; theme: string }) {
           className="preview-description"
           hidden={!open}
         >
-          {t.inside} {t.insideNote}
+          {t.inside} {t.insideNote} “{t.quote}”
         </p>
       </div>
-      <p className="demo-photo-credits">
-        {t.credits}:{' '}
-        <a
-          href="https://chcl.ueh.edu.ht/"
-          target="_blank"
-          rel="noopener noreferrer"
-          title={t.photo}
-        >
-          UEH · CHCL
-        </a>
-        {' / '}
-        <a
-          href="https://unah.edu.ht/"
-          target="_blank"
-          rel="noopener noreferrer"
-          title={t.ceremony}
-        >
-          UNAH
-        </a>
-      </p>
     </div>
   );
 }
@@ -191,9 +173,11 @@ function YearbookScene({ locale, theme }: { locale: Locale; theme: string }) {
 export function LandingPage({
   locale,
   theme,
+  publicPreview,
 }: {
   locale: Locale;
   theme: string;
+  publicPreview: boolean;
 }) {
   const t = content[locale];
   return (
@@ -202,15 +186,19 @@ export function LandingPage({
         <div className="hero-copy">
           <h1 id="opening-title">{t.heading}</h1>
           <p className="intro">{t.description}</p>
-          <div className="hero-actions">
-            <Link className="primary-link" to="/classes/new">
-              {classCopy[locale].createClass}
-              <Arrow />
-            </Link>
-            <Link className="hero-discover" to="/join">
-              {classCopy[locale].join}
-            </Link>
-          </div>
+          {publicPreview ? (
+            <p className="preview-availability">{t.preview}</p>
+          ) : (
+            <div className="hero-actions">
+              <Link className="primary-link" to="/classes/new">
+                {classCopy[locale].createClass}
+                <Arrow />
+              </Link>
+              <Link className="hero-discover" to="/join">
+                {classCopy[locale].join}
+              </Link>
+            </div>
+          )}
         </div>
         <YearbookScene locale={locale} theme={theme} />
       </section>

@@ -1,5 +1,9 @@
 # Haitian graduation demo photography
 
+The November 24 public preview replaces both institutional photos with
+`sample-promotion.webp`, an original generated illustration depicting fictional
+adult graduates. The public build no longer includes the institutional assets.
+
 The landing page's illustrated yearbook uses real institutional photographs
 instead of the previous generic stock photograph. These are presentation assets,
 not student accounts, user uploads, or evidence of an Anamnou partnership.

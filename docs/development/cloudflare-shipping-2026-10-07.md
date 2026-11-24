@@ -6,10 +6,10 @@ services return 503 unless both `API_ENABLED=true` and `API_ORIGIN` are configur
 Public previews must keep this gate closed until production services and consent
 protections are ready. No local database or local API is exposed.
 
-Run the workspace build, then `node scripts/prepare-cloudflare-preview.mjs`.
-From `deploy/cloudflare`, deploy the absolute `.tools/cloudflare-site` directory
-with Wrangler Pages. This adds a visible preview notice; it does not change the
-source application or claim to implement a backend.
+Run `node scripts/prepare-cloudflare-preview.mjs`. From `deploy/cloudflare`,
+deploy the absolute output directory printed by the script with Wrangler Pages.
+This build defaults to Haitian Creole and exposes only the public sample
+yearbook. The proxy configuration must keep account services closed.
 
 The API image builds with `docker build -f deploy/Dockerfile.api -t anamnou-api .`.
 It runs as an unprivileged user on port 4000 with `API_HOST=0.0.0.0`. Local

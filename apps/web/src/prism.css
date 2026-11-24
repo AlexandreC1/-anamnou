@@ -833,7 +833,7 @@ a svg {
 .mini-photo {
   height: 78px;
   border-radius: 35px 35px 5px 5px;
-  background: url('/images/haitian-graduates-chcl.webp') center / cover;
+  background: url('/images/sample-promotion.webp') center / cover;
 }
 .mini-lines {
   display: grid;
@@ -1498,16 +1498,6 @@ a svg {
 
 .demo-edition {
   min-width: 0;
-}
-.demo-photo-credits {
-  margin: 10px 0 0;
-  font-size: 0.72rem;
-  color: var(--muted);
-  text-align: center;
-}
-.demo-photo-credits a {
-  color: inherit;
-  text-underline-offset: 3px;
 }
 
 .governance-settings > .theme-panel,

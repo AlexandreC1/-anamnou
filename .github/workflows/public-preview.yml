@@ -1,0 +1,48 @@
+name: Public yearbook preview
+on:
+  push:
+    branches: [feat/phase-3-yearbook]
+    paths:
+      - '.github/workflows/public-preview.yml'
+      - 'apps/web/**'
+      - 'package-lock.json'
+      - '.node-version'
+permissions:
+  contents: read
+concurrency:
+  group: public-yearbook-preview
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npm run setup:env
+      - run: npm run test --workspace @yearbook/web
+      - run: npm run build --workspace @yearbook/web
+        env:
+          APP_ENV: production
+          VITE_PUBLIC_PREVIEW: 'true'
+          PREVIEW_BASE_PATH: /-anamnou/
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
+        with:
+          path: apps/web/dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
+        id: deployment

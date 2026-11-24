@@ -189,10 +189,12 @@ function RouteFocus({ locale }: { locale: Locale }) {
   }, [pathname, locale]);
   return null;
 }
-function useLocale(): [Locale, (locale: Locale) => void] {
+function useLocale(defaultLocale: Locale): [Locale, (locale: Locale) => void] {
   const [locale, setLocaleState] = useState<Locale>(() => {
     const saved = window.localStorage.getItem('anamnou-locale');
-    return saved === 'ht' || saved === 'fr' || saved === 'es' ? saved : 'en';
+    return saved === 'ht' || saved === 'fr' || saved === 'es' || saved === 'en'
+      ? saved
+      : defaultLocale;
   });
   function setLocale(next: Locale) {
     setLocaleState(next);
@@ -255,7 +257,8 @@ function LanguageChoice({
   );
 }
 export function App() {
-  const [locale, setLocale] = useLocale();
+  const publicPreview = import.meta.env.VITE_PUBLIC_PREVIEW === 'true';
+  const [locale, setLocale] = useLocale(publicPreview ? 'ht' : 'en');
   const [theme, setTheme] = useAppearance();
   const selected = copy[locale];
   useEffect(() => {
@@ -284,6 +287,7 @@ export function App() {
     };
   }, []);
   const { pathname } = useLocation();
+  if (publicPreview && pathname !== '/') return <Navigate to="/" replace />;
   const inWorkspace = /^\/classes\/(?!new(?:\/|$))[^/]+/.test(pathname);
   return (
     <div
@@ -308,9 +312,13 @@ export function App() {
           <NavLink to="/" end>
             {selected.home}
           </NavLink>
-          <NavLink to="/classes">{classCopy[locale].myClasses}</NavLink>
-          <NavLink to="/profile">{settingsCopy[locale].profile}</NavLink>
-          <NavLink to="/settings">{settingsCopy[locale].title}</NavLink>
+          {!publicPreview && (
+            <>
+              <NavLink to="/classes">{classCopy[locale].myClasses}</NavLink>
+              <NavLink to="/profile">{settingsCopy[locale].profile}</NavLink>
+              <NavLink to="/settings">{settingsCopy[locale].title}</NavLink>
+            </>
+          )}
         </nav>
         <LanguageChoice locale={locale} onChange={setLocale} />
       </header>
@@ -371,7 +379,13 @@ export function App() {
               <Route path="/join" element={<JoinClass locale={locale} />} />
               <Route
                 path="/"
-                element={<LandingPage locale={locale} theme={theme} />}
+                element={
+                  <LandingPage
+                    locale={locale}
+                    theme={theme}
+                    publicPreview={publicPreview}
+                  />
+                }
               />
               <Route
                 path="/settings"

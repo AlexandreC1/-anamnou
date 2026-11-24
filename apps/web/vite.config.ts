@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => {
     },
   };
   return {
+    base: environment.PREVIEW_BASE_PATH ?? '/',
     define: {
       'import.meta.env.LOCAL_MAIL_INBOX': JSON.stringify(
         environment.APP_ENV !== 'production' &&

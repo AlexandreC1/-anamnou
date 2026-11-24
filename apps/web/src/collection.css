@@ -114,6 +114,13 @@
   font-size: 1rem;
   line-height: 1.65;
 }
+.preview-availability {
+  max-width: 34ch;
+  margin: 20px 0 0;
+  color: inherit;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
 .collection-hero .hero-actions {
   margin-top: 24px;
   gap: 10px 12px;
@@ -290,14 +297,6 @@
 .book-tap-hint {
   font-size: 0.875rem;
 }
-.collection-hero .demo-photo-credits {
-  margin: 0;
-  line-height: 1.6;
-  color: inherit;
-}
-.collection-hero .demo-photo-credits a {
-  color: inherit;
-}
 .site-collection .site-footer {
   margin-top: 0;
 }
@@ -381,9 +380,6 @@
     width: 110px;
     bottom: 92px;
     left: 0;
-  }
-  .collection-hero .demo-photo-credits {
-    text-align: center;
   }
 }
 @media (prefers-reduced-motion: reduce) {
